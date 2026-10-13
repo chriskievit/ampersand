@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/chriskievit/ampersand/compare/v1.1.0...v1.1.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* **settings:** handle login item approval, stale state and app location ([#5](https://github.com/chriskievit/ampersand/issues/5)) ([edfc52d](https://github.com/chriskievit/ampersand/commit/edfc52db383090c9379804dab29ea02625ac8475)), closes [#4](https://github.com/chriskievit/ampersand/issues/4)
+
 # [1.1.0](https://github.com/chriskievit/ampersand/compare/v1.0.0...v1.1.0) (2026-10-13)
 
 
