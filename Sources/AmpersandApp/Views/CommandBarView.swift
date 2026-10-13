@@ -27,8 +27,9 @@ struct CommandBarView: View {
         .frame(width: 360)
         // Keys keep working after Tab moves focus off the filter field.
         .onKeyPress(phases: .down, action: handleKey)
-        .animation(reduceMotion ? nil : .snappy, value: model.popoverSelection)
-        .animation(reduceMotion ? nil : .snappy, value: model.banner)
+        // Reduce Motion: a short crossfade instead of the spring, never a snap.
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy, value: model.popoverSelection)
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .snappy, value: model.banner)
         .background(WindowVisibilityReader { visible in
             model.isPopoverVisible = visible
             if visible {
@@ -153,7 +154,7 @@ struct CommandBarView: View {
     // MARK: Footer
 
     private var footer: some View {
-        HStack {
+        HStack(spacing: 16) {
             Menu {
                 Button("Add Command…") { model.requestNew() }
                 Button("Add from Project Folder…") { model.requestImport() }
@@ -178,6 +179,7 @@ struct CommandBarView: View {
                 }
             }
         }
+        .foregroundStyle(.primary)   // one treatment for all three footer controls
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
     }

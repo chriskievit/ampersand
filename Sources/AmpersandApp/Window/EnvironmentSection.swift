@@ -26,6 +26,12 @@ struct EnvironmentSection: View {
                         .labelsHidden()
                         .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: 200)
+                    if !row.key.isEmpty && !Self.isValidName(row.key) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundStyle(.secondary)
+                            .help(Self.nameRule)
+                            .accessibilityLabel("Invalid name. \(Self.nameRule)")
+                    }
                     TextField("Value", text: $row.value, prompt: Text("Value"))
                         .labelsHidden()
                         .font(.system(.body, design: .monospaced))
@@ -50,8 +56,8 @@ struct EnvironmentSection: View {
             Text("Environment")
         } footer: {
             if rows.contains(where: { !$0.key.isEmpty && !Self.isValidName($0.key) }) {
-                Label("Names start with a letter or _ and contain only letters, digits and _.",
-                      systemImage: "exclamationmark.triangle.fill")
+                Label("\(Self.nameRule) Variables with an invalid name aren’t saved until it’s fixed.",
+                      systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.secondary)
             } else {
                 Text("Added on top of your login shell’s environment.")
@@ -69,9 +75,10 @@ struct EnvironmentSection: View {
     }
 
     private var serialized: String {
+        // Rows with an invalid name are held back, so one bad row never blocks other edits.
         EnvParser.serialize(rows.compactMap { row in
             let key = row.key.trimmingCharacters(in: .whitespaces)
-            return key.isEmpty ? nil : EnvParser.Pair(key: key, value: row.value)
+            return Self.isValidName(key) ? EnvParser.Pair(key: key, value: row.value) : nil
         })
     }
 
@@ -96,6 +103,8 @@ struct EnvironmentSection: View {
             }
         }
     }
+
+    private static let nameRule = "Names start with a letter or _ and contain only letters, digits and _."
 
     private static func isValidName(_ name: String) -> Bool {
         name.range(of: "^[A-Za-z_][A-Za-z0-9_]*$", options: .regularExpression) != nil

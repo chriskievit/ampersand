@@ -45,7 +45,10 @@ struct CommandForm<Header: View, Footer: View>: View {
                 }
                 LabeledContent("Environment File") {
                     if draft.envFile.isEmpty {
-                        Button("Choose…") { chooseEnvFile() }
+                        HStack {
+                            Text("Not set").foregroundStyle(.secondary)
+                            Button("Choose…") { chooseEnvFile() }
+                        }
                     } else {
                         HStack {
                             Text(draft.envFile)

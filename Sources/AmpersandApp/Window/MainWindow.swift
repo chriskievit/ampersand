@@ -154,14 +154,16 @@ private struct WindowNotices: View {
                             Label {
                                 Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
                             } icon: {
-                                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
+                                Image(systemName: "exclamationmark.triangle")
                             }
                         }
                     }
                 }
             }
-            .padding()
+            .padding(.horizontal)
+            .padding(.vertical, 10)
             .background(.bar)
+            .overlay(alignment: .bottom) { Divider() }
         }
     }
 }
