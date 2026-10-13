@@ -6,7 +6,8 @@ import ServiceManagement
 enum LoginItemService {
     enum Status { case enabled, disabled, needsApproval }
 
-    private static let registeredBuildKey = "loginItemRegisteredBuild"
+    /// What the user last chose in Settings, kept apart from what macOS reports.
+    private static let wantedKey = "launchAtLogin"
 
     static var status: Status {
         switch SMAppService.mainApp.status {
@@ -19,28 +20,20 @@ enum LoginItemService {
     static var location: InstallLocation { InstallLocation(bundlePath: Bundle.main.bundlePath) }
 
     static func setEnabled(_ enabled: Bool) throws {
-        if enabled {
-            try SMAppService.mainApp.register()
-            UserDefaults.standard.set(currentBuild, forKey: registeredBuildKey)
-        } else {
-            try SMAppService.mainApp.unregister()
-            UserDefaults.standard.removeObject(forKey: registeredBuildKey)
-        }
+        if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+        UserDefaults.standard.set(enabled, forKey: wantedKey)
     }
 
-    /// Registers again after an update or a move. Each ad hoc build has a new
-    /// signature, and the login item records the old one and the old path.
+    /// Registers again when the user wants the login item but macOS has none
+    /// for this copy, as after an update (each ad hoc build has a new
+    /// signature) or a move. Turned off in System Settings is
+    /// `requiresApproval`, so the user's choice there stands.
     static func refreshRegistration() {
-        guard status == .enabled, location != .translocated,
-              UserDefaults.standard.string(forKey: registeredBuildKey) != currentBuild else { return }
-        try? setEnabled(true)
-    }
-
-    /// The bundle path plus the executable's modification time: it changes on
-    /// every new build and every move.
-    private static var currentBuild: String {
-        let modified = (try? Bundle.main.executableURL?
-            .resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? nil
-        return "\(Bundle.main.bundlePath)|\(modified?.timeIntervalSince1970 ?? 0)"
+        // Records the choice for items registered before it was stored.
+        if SMAppService.mainApp.status == .enabled { UserDefaults.standard.set(true, forKey: wantedKey) }
+        guard UserDefaults.standard.bool(forKey: wantedKey),
+              SMAppService.mainApp.status == .notRegistered,
+              location != .translocated else { return }
+        try? SMAppService.mainApp.register()
     }
 }
