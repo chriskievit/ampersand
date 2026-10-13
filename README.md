@@ -21,8 +21,6 @@ leave running in a terminal tab: `kubectl port-forward`s, `caffeinate`,
 and let Ampersand restart them when they crash. Quit Ampersand, and everything
 it started stops with it.
 
-No terminal tab should exist only to keep a process alive.
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/popover-dark.png">
@@ -32,16 +30,17 @@ No terminal tab should exist only to keep a process alive.
 
 ## Why Ampersand
 
-- **Native and fast.** SwiftUI and AppKit, no web view, no runtime to ship. It
-  looks and behaves like the rest of macOS, down to the grouped forms in the
-  style of System Settings.
-- **Failure is loud, success is quiet.** A glance at the menu bar is enough
-  when all is well. A crashed command is the one thing that asks for attention.
-- **Behaves like your terminal.** Commands run through your login shell on a
-  pseudo-terminal, so `PATH`, `nvm`, kubectl contexts, aliases and colours
-  work exactly as they do when you type them by hand.
-- **Tidy by design.** Ampersand owns what it starts and cleans all of it up.
-  No orphaned port-forwards holding a port after you quit.
+Ampersand is built with SwiftUI and AppKit, so it is fast and uses standard
+controls, menus and system colours, with grouped forms like System Settings.
+When a custom design and the platform disagree, the platform wins.
+
+It stays out of your way. There is no Dock icon until you open the window, and
+the menu bar icon only changes when a command needs you.
+
+Commands run through your login shell on a pseudo-terminal, so `PATH`, `nvm`,
+kubectl contexts, aliases and colours behave as they do when you type them by
+hand. Everything Ampersand starts stops when it quits. The scope is small on
+purpose: commands and one level of groups, without tags, dashboards or plugins.
 
 ## Features
 
@@ -56,15 +55,15 @@ No terminal tab should exist only to keep a process alive.
 
 ### Keeps things running
 
-- **Restart on crash**, with backoff of 1, 2, 4, 8, 16, 32 and 60 seconds.
-  After 5 crashes in 2 minutes it stops trying and tells you, instead of
-  looping forever. A minute of stable uptime resets the count.
-- **Crash notifications** from macOS Notification Center.
-- **Health checks**: a port that accepts connections, or a URL that responds.
-- **Port conflicts** are spotted before they confuse you: Ampersand names the
-  process that already holds the port.
-- A command that exits with status 0 is **finished**, not crashed. It stays
-  quiet and is not restarted.
+- Restart on crash, with backoff of 1, 2, 4, 8, 16, 32 and 60 seconds. After
+  5 crashes in 2 minutes Ampersand gives up and tells you. A minute of stable
+  uptime resets the count.
+- A macOS notification when a command crashes.
+- Health checks: a port that accepts connections, or a URL that responds.
+- When a command's port is already taken, Ampersand names the process that
+  holds it.
+- A command that exits with status 0 shows as finished. Ampersand does not
+  restart it or notify you.
 
 ### Fast to set up
 
@@ -120,8 +119,7 @@ You only do this once. If you prefer the terminal:
 xattr -dr com.apple.quarantine /Applications/Ampersand.app
 ```
 
-Rather not run a downloaded binary at all? Build it yourself, below. It takes
-a minute.
+You can also build Ampersand yourself, which takes about a minute.
 
 ### Build from source
 
@@ -185,26 +183,14 @@ The full design lives in [`docs/superpowers/specs`](docs/superpowers/specs),
 with the product brief in [`PRODUCT.md`](PRODUCT.md) and the design system in
 [`DESIGN.md`](DESIGN.md).
 
-## Philosophy
-
-- **Out of the way until needed.** No Dock icon until you open the window, no window you did not ask
-  for, no badge for things that are fine.
-- **Session-scoped, not a service manager.** Everything belongs to the app and
-  stops when it quits. If you want something to outlive your session, use a
-  system service manager instead.
-- **Native first.** Standard controls, standard menus, sentence-case labels,
-  system colours. When a custom design and the platform disagree, the platform
-  wins.
-- **Small on purpose.** Commands and one level of groups. No tags, no
-  dashboards, no plugins.
-
 ## FAQ
 
 **Why macOS 26 only?** Ampersand is built on the current SwiftUI and its
 Liquid Glass look. Supporting older systems would mean a second, worse UI.
 
-**Does it keep commands running after I quit?** No, by design. See
-Philosophy.
+**Does it keep commands running after I quit?** No. Quitting Ampersand stops
+every command it started. For something that should outlive your session, use
+a system service manager.
 
 **Which shell does it use?** Your login shell (`$SHELL`), as a login,
 interactive shell, so your `.zprofile` and `.zshrc` are read the same way as in
@@ -214,10 +200,6 @@ Terminal.
 `~/Library/Application Support/Ampersand/config.json`. It is plain JSON.
 Quit Ampersand before you edit it by hand, or use **File ▸ Import…** and
 **File ▸ Export…** to move it between Macs.
-
-**Why does a command show "finished" instead of "crashed"?** It exited with
-status 0. Ampersand treats that as a normal end, so it does not restart it or
-notify you.
 
 ## Stack
 
