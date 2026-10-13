@@ -136,6 +136,7 @@ private struct WindowNotices: View {
                                 }
                                 Button("Dismiss") { model.banner = nil }
                             }
+                            .fixedSize()   // buttons keep their size; the message wraps
                         } label: {
                             Label(banner.message, systemImage: banner.action == nil ? "info.circle" : "exclamationmark.triangle")
                         }
@@ -148,6 +149,7 @@ private struct WindowNotices: View {
                                 Button("Start Anyway") { model.start(runtime.id, force: true) }
                                 Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
                             }
+                            .fixedSize()
                         } label: {
                             Label {
                                 Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
