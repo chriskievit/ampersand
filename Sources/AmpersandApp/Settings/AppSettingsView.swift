@@ -1,4 +1,5 @@
 import AppKit
+import ServiceManagement
 import SwiftUI
 import UserNotifications
 
@@ -6,22 +7,25 @@ import UserNotifications
 struct AppSettingsView: View {
     @AppStorage(NotificationService.enabledKey) private var notificationsEnabled = true
     @AppStorage(AppDefaults.restartOnCrashKey) private var restartDefault = true
-    @State private var launchAtLogin = LoginItemService.isEnabled
+    @State private var loginStatus = LoginItemService.status
     @State private var loginError: String?
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     var body: some View {
         Form {
-            Toggle("Launch at login", isOn: $launchAtLogin)
-                .onChange(of: launchAtLogin) { _, enabled in
-                    do {
-                        try LoginItemService.setEnabled(enabled)
-                        loginError = nil
-                    } catch {
-                        loginError = "Couldn’t change the login item: \(error.localizedDescription)"
-                        launchAtLogin = LoginItemService.isEnabled
-                    }
+            Toggle("Launch at login", isOn: Binding(
+                get: { loginStatus == .enabled },
+                set: { setLaunchAtLogin($0) }))
+            if loginStatus == .needsApproval {
+                HStack {
+                    Text("Ampersand is turned off in Login Items in System Settings.")
+                        .foregroundStyle(.secondary)
+                    Button("Open System Settings") { SMAppService.openSystemSettingsLoginItems() }
                 }
+            }
+            if let locationNote {
+                Text(locationNote).foregroundStyle(.secondary)
+            }
             if let loginError {
                 Text(loginError).foregroundStyle(.secondary)
             }
@@ -42,5 +46,30 @@ struct AppSettingsView: View {
         .formStyle(.grouped)
         .frame(width: 460)
         .task { notificationStatus = await NotificationService.authorizationStatus() }
+        .onAppear { loginStatus = LoginItemService.status }
+        // The user may have changed the login item in System Settings meanwhile.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            loginStatus = LoginItemService.status
+        }
+    }
+
+    private var locationNote: String? {
+        switch LoginItemService.location {
+        case .applications: nil
+        case .translocated:
+            "macOS runs Ampersand from a temporary copy, so it can’t open at login. Move it to the Applications folder and open it from there."
+        case .elsewhere:
+            "Ampersand opens at login from where it is now. Keep it in the Applications folder so that moving it doesn’t break this."
+        }
+    }
+
+    private func setLaunchAtLogin(_ enabled: Bool) {
+        do {
+            try LoginItemService.setEnabled(enabled)
+            loginError = nil
+        } catch {
+            loginError = "Couldn’t change the login item: \(error.localizedDescription)"
+        }
+        loginStatus = LoginItemService.status
     }
 }
