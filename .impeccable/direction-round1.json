@@ -1,0 +1,130 @@
+{
+  "title": "Ampersand: choose the visual world",
+  "question": "The roll assigned Flight Strip Bay. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Flight Strip Bay",
+      "kicker": "THE ROLL",
+      "lineage": "Air traffic control flight progress strips in a strip bay",
+      "thesis": "Every running command is a strip in the controller's bay: read at a glance, handled by hand, never lost.",
+      "palette": ["#1C1F24", "#E9E4D6", "#3FA34D", "#E0A526", "#D9483B"],
+      "materials": ["printed strip card in a coloured holder", "fixed-field boxes", "SF Mono field values", "native vibrancy popover"],
+      "viewport": "Popover = the strip bay: one strip per command, a coloured holder edge for state, fixed fields (name, port, CPU, mem, uptime) in ruled boxes; groups are separate bays.",
+      "risk": "Becomes costume if strips get fake paper texture; must stay flat, native, and dense.",
+      "raised": [
+        {"from": "operate-c-emission-line-rail", "raise": "State lives in the holder's form, not only its hue: solid = running, dashed = restarting, struck = stopped, doubled = crashed."},
+        {"from": "crouwel-grid-specimen", "raise": "Every strip shares one fixed-field grid, so columns line up across bays like a printed form."},
+        {"from": "brand-identity-canon-saville-catalog-sleeve", "raise": "Every command carries a job number (%1, %2…) as its callsign and its ⌘-number shortcut."},
+        {"from": "notation-diagram-systems-star-atlas", "raise": "Load reads as one ranked magnitude glyph per strip instead of two competing number columns."}
+      ],
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "bay header: Ampersand · 4 running · 1 crashed", "x": 0, "y": 0, "w": 12, "h": 1},
+        {"label": "bay: Storefront", "x": 0, "y": 1, "w": 12, "h": 1},
+        {"label": "strip %1 holder", "x": 0, "y": 2, "w": 1, "h": 1, "accent": true},
+        {"label": "%1 port-forward api · :8080 · ● · 2h14", "x": 1, "y": 2, "w": 11, "h": 1},
+        {"label": "strip %2", "x": 0, "y": 3, "w": 1, "h": 1, "accent": true},
+        {"label": "%2 npm run dev web · :3000", "x": 1, "y": 3, "w": 11, "h": 1},
+        {"label": "bay: Loose", "x": 0, "y": 4, "w": 12, "h": 1},
+        {"label": "%3 caffeinate", "x": 1, "y": 5, "w": 11, "h": 1},
+        {"label": "%4 crashed · restart in 4s", "x": 1, "y": 6, "w": 11, "h": 1, "accent": true},
+        {"label": "footer: + Add · Open window · Quit (stops all)", "x": 0, "y": 9, "w": 12, "h": 1}
+      ]}
+    },
+    {
+      "id": "model-pick",
+      "label": "Job Control Table",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "The shell's own `jobs` / `ps` output",
+      "thesis": "Ampersand looks like the `jobs` command grew a UI: typographic rows, state words, nothing else.",
+      "palette": ["#111315", "#D7DAD6", "#7FD18B", "#E8B04B", "#F06A5B"],
+      "materials": ["monospaced table rows", "plain state words (Running, Done(1), Stopped)", "hairline column rules"],
+      "viewport": "Popover is a `jobs` table: [n]+ marker, state word, command line truncated, port and load right-aligned.",
+      "risk": "The most familiar direction for a dev tool; can read like a terminal screenshot rather than a Mac app.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "header row: JOB STATE COMMAND PORT LOAD", "x": 0, "y": 0, "w": 12, "h": 1},
+        {"label": "[1]+ Running kubectl port-forward…", "x": 0, "y": 1, "w": 12, "h": 1},
+        {"label": "[2]  Running npm run dev", "x": 0, "y": 2, "w": 12, "h": 1},
+        {"label": "[3]- Exit 1  vite", "x": 0, "y": 3, "w": 12, "h": 1, "accent": true},
+        {"label": "footer actions", "x": 0, "y": 9, "w": 12, "h": 1}
+      ]}
+    },
+    {
+      "id": "operate-c-emission-line-rail",
+      "label": "Emission Line Rail",
+      "verdict": "declined",
+      "lineage": "Spectrogram plate on a light box",
+      "thesis": "Commands as hairline emission lines on one rail; state as line height, dash, doubling.",
+      "palette": ["#2A2C2E", "#E6E1D3", "#F2C230"],
+      "materials": ["charcoal continuum", "1px coloured hairlines"],
+      "viewport": "A single rail with a tick per command; the open one blooms into a plate.",
+      "risk": "Beautiful but abstract; you'd decode lines instead of reading names.",
+      "case": "Loses both axes: devs don't identify with spectra, and names hide behind ticks.",
+      "kept": "State carried by form, not hue alone."
+    },
+    {
+      "id": "crouwel-grid-specimen",
+      "label": "Crouwel Grid Specimen",
+      "verdict": "declined",
+      "lineage": "Wim Crouwel gridded type posters",
+      "thesis": "A visible construction grid with monumental grid-built letterforms.",
+      "palette": ["#FFFFFF", "#1A1A1A", "#2F5BEA"],
+      "materials": ["construction-grid hairlines", "grid-built display type"],
+      "viewport": "Giant & built from cells over a small status grid.",
+      "risk": "Monumental type wastes popover space.",
+      "case": "Loses both axes in a 360pt popover.",
+      "kept": "One strict field grid every row obeys."
+    },
+    {
+      "id": "digital-design-canon-metro-typographic-tiles",
+      "label": "Metro Tiles",
+      "verdict": "declined",
+      "lineage": "Windows Phone Metro",
+      "thesis": "Flat colour tiles and giant cropped lowercase; chrome deleted.",
+      "palette": ["#000000", "#1BA1E2", "#FFFFFF"],
+      "materials": ["flat tiles", "light lowercase type"],
+      "viewport": "A tile per command, live tiles flip with CPU.",
+      "risk": "Fights macOS idiom outright.",
+      "case": "Loses both axes: un-Mac, and tiles hide dense status.",
+      "kept": "Chrome deletion: type and state are the interface."
+    },
+    {
+      "id": "notation-diagram-systems-star-atlas",
+      "label": "Star Atlas",
+      "verdict": "declined",
+      "lineage": "Celestial star charts",
+      "thesis": "Processes as stars; magnitude = load.",
+      "palette": ["#0E1A33", "#F2F2EE", "#C8452F"],
+      "materials": ["navy chart ground", "magnitude-ranked dots"],
+      "viewport": "A small sky with one star per command.",
+      "risk": "Spatial metaphor with no spatial truth.",
+      "case": "Loses both axes: position means nothing for processes.",
+      "kept": "One ranked magnitude ramp for load."
+    },
+    {
+      "id": "brand-identity-canon-saville-catalog-sleeve",
+      "label": "Factory Catalog",
+      "verdict": "declined",
+      "lineage": "Peter Saville / Factory Records FAC numbers",
+      "thesis": "Every artifact gets a catalog number; colour codes stand in for words.",
+      "palette": ["#0B0B0B", "#FFFFFF", "#E5462F"],
+      "materials": ["matte black", "white hairline plot", "colour-code strips"],
+      "viewport": "FAC-numbered index, one pulse plot owning the field.",
+      "risk": "Coded labels slow a glance.",
+      "case": "Loses both axes: decoding is the opposite of glanceable.",
+      "kept": "Catalog numbers as identity (%1, %2 job numbers)."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": true,
+  "canonCard": {
+    "label": "Native macOS utility",
+    "thesis": "What Mac menu bar utilities ship: Control Center-style rows, SF Symbols, green/red dots, executed with full HIG craft.",
+    "palette": ["#F5F5F7", "#1D1D1F", "#0A84FF", "#30D158", "#FF453A"],
+    "materials": ["system vibrancy", "SF Pro + SF Symbols", "inset grouped list"],
+    "viewport": "Popover with grouped rows: status dot, name, port, toggle switch; window is a sidebar + log detail.",
+    "risk": "Indistinguishable from every other menu bar utility by design."
+  },
+  "steer": true
+}

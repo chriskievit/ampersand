@@ -1,0 +1,70 @@
+{
+  "title": "Ampersand: choose the visual world (native macOS)",
+  "question": "Steer applied: native, modern macOS, Apple HIG. The roll assigned Spotlight-lineage Command Bar. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Command Bar",
+      "kicker": "THE ROLL",
+      "lineage": "macOS 26 Spotlight with quick actions; Liquid Glass popover, SF Pro, SF Symbols",
+      "thesis": "Ampersand is driven like Spotlight: the popover opens with focus in a filter field, arrows select, Return starts or stops, every action has a key.",
+      "palette": ["#F5F5F7", "#1D1D1F", "#0A84FF", "#30D158", "#FF9F0A", "#FF453A"],
+      "materials": ["Liquid Glass popover", "SF Pro 13pt single size", "SF Symbols status glyphs", "system accent for actions only"],
+      "viewport": "Popover: filter field on top; rows of commands (glyph, name, port, live CPU/mem, uptime); the selected row expands to show its last log lines and action keys (↩ start/stop, ⌘R restart, ⌘L full log).",
+      "risk": "Keyboard-first can hide actions from mouse use; every key action needs a visible hover control too.",
+      "raised": [
+        {"from": "rw-centre-rail-reference-setting", "raise": "A fixed status-glyph vocabulary: filled = running, dashed = restarting, octagon = crashed, hollow = stopped. Shape, not just colour."},
+        {"from": "vernacular-ephemera-jet-age-ticket-wallet", "raise": "Nothing silently resets: an exited command keeps its stamp (exit 1 · 14:02) until you act on it."},
+        {"from": "rw-timetable-slide-rack", "raise": "One text size in the popover; rank comes from weight and secondary label colour, never size jumps."},
+        {"from": "variable-font-specimen", "raise": "Live numbers use tabular figures and update in place with no layout shift."},
+        {"from": "digital-design-canon-warm-consumer-app-surface", "raise": "Accent colour appears only where something can be pressed; status colours live only in the glyph."}
+      ],
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "filter field  ·  4 running", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true},
+        {"label": "STOREFRONT", "x": 0, "y": 1, "w": 12, "h": 1},
+        {"label": "● api port-forward  :8080  0.1%  2h14", "x": 0, "y": 2, "w": 12, "h": 1},
+        {"label": "● web  npm run dev  :3000  3.2%  41m (selected)", "x": 0, "y": 3, "w": 12, "h": 1, "accent": true},
+        {"label": "last log lines  ·  ↩ stop  ⌘R restart  ⌘L log", "x": 1, "y": 4, "w": 11, "h": 2},
+        {"label": "◯ caffeinate  stopped", "x": 0, "y": 6, "w": 12, "h": 1},
+        {"label": "⬣ worker  exit 1 · 14:02 · retry in 4s", "x": 0, "y": 7, "w": 12, "h": 1},
+        {"label": "+ Add   Open Ampersand   Quit (stops all)", "x": 0, "y": 9, "w": 12, "h": 1}
+      ]}
+    },
+    {
+      "id": "model-pick",
+      "label": "Console Tail",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Console.app and Xcode's run log; native list rows",
+      "thesis": "Each row's subtitle is the command's newest log line, so the output itself is the status.",
+      "palette": ["#F5F5F7", "#1D1D1F", "#0A84FF", "#30D158", "#FF453A"],
+      "materials": ["native list rows", "SF Mono subtitle", "SF Symbols"],
+      "viewport": "Popover rows: glyph, name, port; under it the last stdout line in SF Mono, turning red with the final error line on a crash.",
+      "risk": "Familiar from Xcode and many dev utilities; noisy servers can make rows flicker.",
+      "wireframe": {"cols": 12, "rows": 10, "regions": [
+        {"label": "header · 4 running", "x": 0, "y": 0, "w": 12, "h": 1},
+        {"label": "● web :3000 / ready in 412ms", "x": 0, "y": 1, "w": 12, "h": 2},
+        {"label": "● api :8080 / Handling connection for 8080", "x": 0, "y": 3, "w": 12, "h": 2},
+        {"label": "⬣ worker / Error: EADDRINUSE", "x": 0, "y": 5, "w": 12, "h": 2, "accent": true},
+        {"label": "footer", "x": 0, "y": 9, "w": 12, "h": 1}
+      ]}
+    },
+    {"id": "variable-font-specimen", "label": "Variable Font Specimen", "verdict": "declined", "lineage": "Interactive type specimens", "thesis": "One axis slider remaps the whole grid live.", "palette": ["#FAFAF7", "#111111", "#E8432E"], "materials": ["paper white", "display letterforms"], "viewport": "A giant & with live readouts below.", "risk": "Decorative in a utility.", "case": "Loses both axes against a native brief.", "kept": "Live readouts that update in place."},
+    {"id": "digital-design-canon-warm-consumer-app-surface", "label": "Warm Consumer Surface", "verdict": "declined", "lineage": "Friendly consumer apps", "thesis": "Soft cards; one bright colour only where you can act.", "palette": ["#F6EFE6", "#FFFFFF", "#FF5A36"], "materials": ["soft cards", "rounded sans"], "viewport": "Card per command with a bottom bar.", "risk": "Reads iOS-consumer, not Mac utility.", "case": "Loses both axes: devs on a Mac don't identify with it.", "kept": "Accent only on actionable elements."},
+    {"id": "aww2-zoo-gardens-guide-map", "label": "Zoo Guide Map", "verdict": "declined", "lineage": "Illustrated guide maps", "thesis": "Areas as flat colour lobes.", "palette": ["#8ED462", "#F5F1E4", "#2C2E2A"], "materials": ["flat SVG lobes"], "viewport": "Commands as map lobes.", "risk": "No spatial truth in processes.", "case": "Loses both axes.", "kept": "One motion timing used everywhere."},
+    {"id": "rw-timetable-slide-rack", "label": "Timetable Slide Rack", "verdict": "declined", "lineage": "1971 pocket airline timetable", "thesis": "One type size; rank by weight, case and rule.", "palette": ["#D9A521", "#2B2F33", "#C63D2F"], "materials": ["tinted glass", "condensed gothic"], "viewport": "A raked rack of slides.", "risk": "Raked containers fight native layout.", "case": "Loses both axes against native.", "kept": "Single type size, rank by weight."},
+    {"id": "rw-centre-rail-reference-setting", "label": "Centre Rail Setting", "verdict": "declined", "lineage": "Ruled reference editions", "thesis": "States as printed marks with fixed meanings.", "palette": ["#EFE9DC", "#1A1A1A", "#B8322A"], "materials": ["hairline rules", "small caps"], "viewport": "Two columns around a key rail.", "risk": "Bookish, not Mac.", "case": "Loses both axes.", "kept": "A fixed mark-shape vocabulary for state."},
+    {"id": "vernacular-ephemera-jet-age-ticket-wallet", "label": "Ticket Wallet", "verdict": "declined", "lineage": "Jet-age airline coupons", "thesis": "Nothing disappears, it cancels.", "palette": ["#1B2A4A", "#D6312B", "#FFFFFF"], "materials": ["coupon stock", "carbon numerals"], "viewport": "A coupon per command.", "risk": "Costume risk in a native app.", "case": "Loses both axes.", "kept": "Exit stamps persist until acted on."}
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "buildPath": {"value": "code", "toggle": false},
+  "canon": true,
+  "canonCard": {
+    "label": "Native macOS utility",
+    "thesis": "Control Center-style rows with a toggle per command, executed with full HIG craft.",
+    "palette": ["#F5F5F7", "#1D1D1F", "#0A84FF", "#30D158", "#FF453A"],
+    "materials": ["Liquid Glass", "SF Pro + SF Symbols", "inset grouped list", "toggle switches"],
+    "viewport": "Popover with grouped rows: status dot, name, port, on/off switch; window is sidebar + log detail.",
+    "risk": "Indistinguishable from other menu bar utilities by design."
+  },
+  "steer": true
+}
