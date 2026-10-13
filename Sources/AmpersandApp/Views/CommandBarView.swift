@@ -65,6 +65,10 @@ struct CommandBarView: View {
                 .foregroundStyle(.secondary)
             TextField("Filter Commands", text: $filter)
                 .textFieldStyle(.plain)
+                // A filter needs no system suggestions; their (empty) panel covered the list.
+                .autocorrectionDisabled()
+                .textContentType(nil)
+                .writingToolsBehavior(.disabled)
                 .focused($filterFocused)
                 .onKeyPress(phases: .down, action: handleKey)
             Text("\(model.runningCount) running")
