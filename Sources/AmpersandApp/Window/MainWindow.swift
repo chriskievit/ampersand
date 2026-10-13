@@ -19,6 +19,13 @@ struct MainWindow: View {
             }
         }
         .frame(minWidth: 760, minHeight: 460)
+        .sheet(item: $model.editorRequest) { request in
+            switch request {
+            case .new: CommandEditorSheet(model: model, original: nil)
+            case .edit(let id): CommandEditorSheet(model: model, original: model.runtime(id)?.spec)
+            case .importProject: ProjectImportSheet(model: model)
+            }
+        }
         .background(WindowVisibilityReader { model.isWindowVisible = $0 })
         .onAppear {
             ActivationPolicyController.windowDidAppear()
@@ -88,10 +95,10 @@ private struct CommandDetail: View {
             }
     }
 
-    // Task 20 replaces this with the command settings form.
     @ViewBuilder
     private func settingsPane(for runtime: CommandRuntime) -> some View {
-        ContentUnavailableView("Settings", systemImage: "slider.horizontal.3")
+        CommandSettingsPane(runtime: runtime, model: model)
+            .id(runtime.id)
     }
 
     private var plainLog: String {
