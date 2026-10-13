@@ -64,7 +64,7 @@ struct CommandBarView: View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField("Filter Commands", text: $filter)
+            TextField("Filter commands", text: $filter)
                 .textFieldStyle(.plain)
                 // A filter needs no system suggestions; their (empty) panel covered the list.
                 .autocorrectionDisabled()
@@ -134,7 +134,7 @@ struct CommandBarView: View {
                 if let group = entry.section.group {
                     GroupHeader(group: group, model: model)
                 } else if !model.config.groups.isEmpty {
-                    Text("No Group")
+                    Text("No group")
                         .fontWeight(.semibold)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 8)
@@ -156,8 +156,8 @@ struct CommandBarView: View {
     private var footer: some View {
         HStack(spacing: 16) {
             Menu {
-                Button("Add Command…") { model.requestNew() }
-                Button("Add from Project Folder…") { model.requestImport() }
+                Button("Add command…") { model.requestNew() }
+                Button("Add from project folder…") { model.requestImport() }
             } label: {
                 Label("Add", systemImage: "plus")
             }
@@ -168,7 +168,7 @@ struct CommandBarView: View {
             Button("Open Ampersand") { model.openMainWindow() }
                 .buttonStyle(.borderless)
                 .lineLimit(1)
-            // The longest label that fits: "Quit and Stop 3 Processes" → "Quit and Stop 3" → "Quit".
+            // The longest label that fits: "Quit and stop 3 processes" → "Quit and stop 3" → "Quit".
             ViewThatFits(in: .horizontal) {
                 ForEach(quitTitles, id: \.self) { title in
                     Button(title) { NSApp.terminate(nil) }
@@ -187,7 +187,7 @@ struct CommandBarView: View {
     private var quitTitles: [String] {
         let count = model.processCount
         guard count > 0 else { return ["Quit"] }
-        return ["Quit and Stop \(count) \(count == 1 ? "Process" : "Processes")", "Quit and Stop \(count)", "Quit"]
+        return ["Quit and stop \(count) \(count == 1 ? "process" : "processes")", "Quit and stop \(count)", "Quit"]
     }
 
     // MARK: Keyboard (spec 4.2)
@@ -253,7 +253,7 @@ private struct GroupHeader: View {
                 .accessibilityAddTraits(.isHeader)
             Spacer()
             if hovering {
-                Button(anyActive ? "Stop All" : "Start All") { model.toggleGroup(group.id) }
+                Button(anyActive ? "Stop all" : "Start all") { model.toggleGroup(group.id) }
                     .buttonStyle(.borderless)
                     .controlSize(.small)
             }
@@ -264,8 +264,8 @@ private struct GroupHeader: View {
         .contentShape(.rect)
         .onHover { hovering = $0 }
         .contextMenu {
-            Button("Start All") { model.commands(inGroup: group.id).forEach { model.start($0.id) } }
-            Button("Stop All") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
+            Button("Start all") { model.commands(inGroup: group.id).forEach { model.start($0.id) } }
+            Button("Stop all") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
         }
     }
 }

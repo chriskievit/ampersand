@@ -222,7 +222,7 @@ Template image of a semibold system `&` (20 × 18 pt): 45 % opacity when nothing
 One token: the system `.snappy` spring for row expand/collapse, selection change and banner appearance; expanded content enters with opacity + move from top. Glyph changes use the symbol replace transition. Under Reduce Motion: a 0.2 s ease-in-out crossfade (opacity only), never a snap. No load-in choreography; motion only conveys state.
 
 ### Copy
-- Quiet and exact. Sentence case for messages, title case for buttons and menu items ("Show Log", "Start Again", "Quit and Stop 2 Processes").
+- Quiet and exact. Sentence case everywhere: messages, buttons, menu items, field labels and picker options ("Show log", "Start again", "Quit and stop 2 processes"). Proper nouns keep their capitals (Ampersand, Finder, System Settings, URL, `.env`). This is a deliberate user decision (2026-10-13): Apple's writing guidance allows either style if applied consistently, although the macOS button HIG recommends title case.
 - Labels name the action. Errors name the problem and the recovery ("Folder not found: ~/dev/x" + "Edit…").
 - State words, lower case: stopped, starting, running, stopping, restarting, crashed, finished, couldn't start.
 - Stamps join with " · ": `exit 1 · 14:02 · retry in 4s`, `signal 9 · 14:02`, `exit 0 · 14:02`, `gave up after 5 restarts · exit 1`.

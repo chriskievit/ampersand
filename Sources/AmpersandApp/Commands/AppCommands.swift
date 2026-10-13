@@ -11,9 +11,9 @@ struct AppCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("New Command") { model.requestNew() }
+            Button("New command") { model.requestNew() }
                 .keyboardShortcut("n")
-            Button("Add from Project Folder…") { model.requestImport() }
+            Button("Add from project folder…") { model.requestImport() }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
             Divider()
             Button("Import…") { importConfig() }
@@ -37,18 +37,18 @@ struct AppCommands: Commands {
             }
             .keyboardShortcut("r")
             .disabled(selected?.status.isActive != true)
-            Button("Start/Stop Group") {
+            Button("Start/stop group") {
                 if let selected { model.toggleGroup(selected.spec.group) }
             }
             .keyboardShortcut(.return, modifiers: [.command, .option])
             .disabled(selected == nil)
             Divider()
-            Button("Show Log") {
+            Button("Show log") {
                 if let selected { model.showLog(selected.id) }
             }
             .keyboardShortcut("l")
             .disabled(selected == nil)
-            Button("Open in Browser") {
+            Button("Open in browser") {
                 if let selected { model.openInBrowser(selected.id) }
             }
             .keyboardShortcut("o")
@@ -64,21 +64,21 @@ struct AppCommands: Commands {
             }
             .keyboardShortcut("d")
             .disabled(selected == nil)
-            Menu("Move to Group") {
-                Button("No Group") { if let selected { model.move(selected.id, toGroup: nil) } }
+            Menu("Move to group") {
+                Button("No group") { if let selected { model.move(selected.id, toGroup: nil) } }
                 Divider()
                 ForEach(model.config.groups) { group in
                     Button(group.name) { if let selected { model.move(selected.id, toGroup: group.id) } }
                 }
             }
             .disabled(selected == nil)
-            Button("Move Up") { if let selected { model.move(selected.id, by: -1) } }
+            Button("Move up") { if let selected { model.move(selected.id, by: -1) } }
                 .keyboardShortcut(.upArrow, modifiers: [.command, .option])
                 .disabled(selected == nil)
-            Button("Move Down") { if let selected { model.move(selected.id, by: 1) } }
+            Button("Move down") { if let selected { model.move(selected.id, by: 1) } }
                 .keyboardShortcut(.downArrow, modifiers: [.command, .option])
                 .disabled(selected == nil)
-            Button("New Group") { model.addGroup(named: "") }
+            Button("New group") { model.addGroup(named: "") }
             Divider()
             // No ⌘⌫ here: a menu key equivalent would fire while editing text. The sidebar's
             // Edit ▸ Delete (onDeleteCommand) covers the keyboard path.
@@ -88,18 +88,18 @@ struct AppCommands: Commands {
             .disabled(selected == nil)
         }
         CommandMenu("Log") {
-            Button("Clear Log") { if let selected { model.clearLog(selected.id) } }
+            Button("Clear log") { if let selected { model.clearLog(selected.id) } }
                 .keyboardShortcut("k")
                 .disabled(selected == nil)
-            Button("Copy Log") { if let selected { model.copyLog(selected.id) } }
+            Button("Copy log") { if let selected { model.copyLog(selected.id) } }
                 .disabled(selected == nil)
-            Button("Export Log…") { if let selected { model.exportLog(selected.id) } }
+            Button("Export log…") { if let selected { model.exportLog(selected.id) } }
                 .disabled(selected == nil)
         }
         CommandGroup(before: .toolbar) {
-            Button("Show Log") { model.windowTab = .log }
+            Button("Show log") { model.windowTab = .log }
                 .keyboardShortcut("1", modifiers: [.command, .option])
-            Button("Show Command Settings") { model.windowTab = .settings }
+            Button("Show command settings") { model.windowTab = .settings }
                 .keyboardShortcut("2", modifiers: [.command, .option])
             Divider()
         }

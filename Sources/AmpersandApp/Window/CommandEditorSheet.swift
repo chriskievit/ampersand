@@ -15,7 +15,7 @@ struct CommandEditorSheet: View {
         _draft = State(initialValue: original.map(CommandDraft.init(spec:)) ?? CommandDraft(restartDefault: AppDefaults.restartOnCrash))
     }
 
-    private var title: String { original.map { "Edit “\($0.name)”" } ?? "New Command" }
+    private var title: String { original.map { "Edit “\($0.name)”" } ?? "New command" }
 
     private var isDirty: Bool {
         if let original { return draft.makeSpec() != original }
@@ -31,7 +31,7 @@ struct CommandEditorSheet: View {
             }
             Divider()
             HStack {
-                Button(session.isRunning ? "Stop Test" : "Run Once") {
+                Button(session.isRunning ? "Stop test" : "Run once") {
                     session.isRunning ? session.stop() : session.run(draft.makeSpec(), model: model)
                 }
                 .disabled(!draft.isValid)
@@ -50,7 +50,7 @@ struct CommandEditorSheet: View {
                             isPresented: $confirmingDiscard) {
             Button("Save") { save() }
                 .disabled(!draft.isValid)
-            Button("Discard Changes", role: .destructive) { close() }
+            Button("Discard changes", role: .destructive) { close() }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Your changes haven’t been saved.")

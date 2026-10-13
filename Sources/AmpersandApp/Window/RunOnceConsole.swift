@@ -37,7 +37,7 @@ struct RunOnceSection: View {
     let runtime: CommandRuntime
 
     var body: some View {
-        Section("Test Run") {
+        Section("Test run") {
             LabeledContent("Status") {
                 HStack(spacing: 6) {
                     StatusGlyph(kind: runtime.status.kind, healthFailing: false)

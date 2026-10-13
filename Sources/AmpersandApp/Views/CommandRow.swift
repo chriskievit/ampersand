@@ -63,7 +63,7 @@ struct CommandRow: View {
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityAction(named: runtime.status.isActive ? "Stop" : "Start") { model.toggle(runtime.id) }
         .accessibilityAction(named: "Restart") { model.restart(runtime.id) }
-        .accessibilityAction(named: "Show Log") { model.showLog(runtime.id) }
+        .accessibilityAction(named: "Show log") { model.showLog(runtime.id) }
     }
 
     @ViewBuilder

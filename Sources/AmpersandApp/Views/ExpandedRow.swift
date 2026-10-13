@@ -23,7 +23,7 @@ struct ExpandedRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
                 HStack {
-                    Button("Start Anyway") { model.start(runtime.id, force: true) }
+                    Button("Start anyway") { model.start(runtime.id, force: true) }
                     Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
                 }
             }
@@ -37,7 +37,7 @@ struct ExpandedRow: View {
         if runtime.needsRestartToApply {
             HStack {
                 Text("Settings changed.")
-                Button("Restart to Apply") { model.restart(runtime.id) }
+                Button("Restart to apply") { model.restart(runtime.id) }
             }
         }
         if let since = runtime.healthFailingSince, case .unhealthy(let reason)? = runtime.health {
@@ -78,10 +78,10 @@ struct ExpandedRow: View {
             Button("Restart") { model.restart(runtime.id) }
                 .disabled(!runtime.status.isActive)
                 .help("⌘R")
-            Button("Show Log") { model.showLog(runtime.id) }
+            Button("Show log") { model.showLog(runtime.id) }
                 .help("⌘L")
             if runtime.spec.port != nil {
-                Button("Open in Browser") { model.openInBrowser(runtime.id) }
+                Button("Open in browser") { model.openInBrowser(runtime.id) }
                     .help("⌘O")
             }
         }
@@ -89,7 +89,7 @@ struct ExpandedRow: View {
 
     private var primaryTitle: String {
         if runtime.status.isActive { return "Stop" }
-        return runtime.status.kind == .gaveUp ? "Start Again" : "Start"
+        return runtime.status.kind == .gaveUp ? "Start again" : "Start"
     }
 
     private func failureText(_ failure: StartFailure) -> String {

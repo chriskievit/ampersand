@@ -41,16 +41,16 @@ struct EnvironmentSection: View {
                         Image(systemName: "minus.circle")
                     }
                     .buttonStyle(.borderless)
-                    .help("Remove Variable")
+                    .help("Remove variable")
                     .accessibilityLabel("Remove \(row.key.isEmpty ? "variable" : row.key)")
                 }
             }
             HStack {
-                Button("Add Variable", systemImage: "plus") {
+                Button("Add variable", systemImage: "plus") {
                     rows.append(Row(key: "", value: ""))
                 }
                 Spacer()
-                Button("Import from .env File…") { importFile() }
+                Button("Import from .env file…") { importFile() }
             }
         } header: {
             Text("Environment")

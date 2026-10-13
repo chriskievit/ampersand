@@ -15,7 +15,7 @@ struct MainWindow: View {
                 if let runtime = model.runtime(model.windowSelection) {
                     CommandDetail(runtime: runtime, model: model)
                 } else {
-                    ContentUnavailableView("No Command Selected", systemImage: "terminal",
+                    ContentUnavailableView("No command selected", systemImage: "terminal",
                                            description: Text("Select a command, or add one with ⌘N."))
                 }
             }
@@ -71,12 +71,12 @@ private struct CommandDetail: View {
                 Button("Restart", systemImage: "arrow.clockwise") { model.restart(runtime.id) }
                     .disabled(!runtime.status.isActive)
                 Menu {
-                    Button("Open in Browser") { model.openInBrowser(runtime.id) }
+                    Button("Open in browser") { model.openInBrowser(runtime.id) }
                         .disabled(runtime.spec.port == nil)
                     Divider()
-                    Button("Clear Log") { model.clearLog(runtime.id) }
-                    Button("Copy Log") { model.copyLog(runtime.id) }
-                    Button("Export Log…") { model.exportLog(runtime.id) }
+                    Button("Clear log") { model.clearLog(runtime.id) }
+                    Button("Copy log") { model.copyLog(runtime.id) }
+                    Button("Export log…") { model.exportLog(runtime.id) }
                 } label: {
                     Label { Text(verbatim: "More") } icon: { Image(systemName: "ellipsis.circle") }
                 }
@@ -93,7 +93,7 @@ private struct CommandDetail: View {
                 generation: runtime.logGeneration, follow: $follow)
             .overlay {
                 if runtime.lines.isEmpty && runtime.partialLine.isEmpty {
-                    ContentUnavailableView("No Output", systemImage: "text.alignleft",
+                    ContentUnavailableView("No output", systemImage: "text.alignleft",
                                            description: Text(runtime.status.isActive
                                                              ? "Waiting for the command to print something."
                                                              : "Start the command to see its output."))
@@ -101,7 +101,7 @@ private struct CommandDetail: View {
             }
             .overlay(alignment: .bottomTrailing) {
                 if !follow {
-                    Button("Jump to Latest", systemImage: "arrow.down") { follow = true }
+                    Button("Jump to latest", systemImage: "arrow.down") { follow = true }
                         .padding()
                 }
             }
@@ -146,7 +146,7 @@ private struct WindowNotices: View {
                     GroupBox {
                         LabeledContent {
                             HStack {
-                                Button("Start Anyway") { model.start(runtime.id, force: true) }
+                                Button("Start anyway") { model.start(runtime.id, force: true) }
                                 Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
                             }
                             .fixedSize()

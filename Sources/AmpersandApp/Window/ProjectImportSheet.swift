@@ -15,7 +15,7 @@ struct ProjectImportSheet: View {
         VStack(spacing: 0) {
             Form {
                 Section {
-                    LabeledContent("Project Folder") {
+                    LabeledContent("Project folder") {
                         HStack {
                             if let folder {
                                 Text((folder.path as NSString).abbreviatingWithTildeInPath)
@@ -26,7 +26,7 @@ struct ProjectImportSheet: View {
                         }
                     }
                 } header: {
-                    Text("Add from Project Folder").font(.headline)
+                    Text("Add from project folder").font(.headline)
                 } footer: {
                     if folder == nil {
                         Text("Choose or drop a folder that contains a package.json.")
@@ -63,7 +63,7 @@ struct ProjectImportSheet: View {
             Divider()
             HStack {
                 if folder != nil && project == nil {
-                    Button("Add Command…") { model.editorRequest = .new }
+                    Button("Add command…") { model.editorRequest = .new }
                 }
                 Spacer()
                 Button("Cancel", role: .cancel) { close() }
@@ -81,7 +81,7 @@ struct ProjectImportSheet: View {
     }
 
     private var addTitle: String {
-        selected.count <= 1 ? "Add Command" : "Add \(selected.count) Commands"
+        selected.count <= 1 ? "Add command" : "Add \(selected.count) commands"
     }
 
     private func binding(for name: String) -> Binding<Bool> {

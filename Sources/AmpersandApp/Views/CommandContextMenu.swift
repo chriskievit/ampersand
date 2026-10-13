@@ -11,14 +11,14 @@ struct CommandContextMenu: View {
         Button("Restart") { model.restart(runtime.id) }
             .disabled(!runtime.status.isActive)
         Divider()
-        Button("Show Log") { model.showLog(runtime.id) }
-        Button("Open in Browser") { model.openInBrowser(runtime.id) }
+        Button("Show log") { model.showLog(runtime.id) }
+        Button("Open in browser") { model.openInBrowser(runtime.id) }
             .disabled(runtime.spec.port == nil)
         Divider()
         Button("Edit…") { model.requestEdit(runtime.id) }
         Button("Duplicate") { model.duplicate(runtime.id) }
-        Menu("Move to Group") {
-            Button("No Group") { model.move(runtime.id, toGroup: nil) }
+        Menu("Move to group") {
+            Button("No group") { model.move(runtime.id, toGroup: nil) }
                 .disabled(runtime.spec.group == nil)
             Divider()
             ForEach(model.config.groups) { group in

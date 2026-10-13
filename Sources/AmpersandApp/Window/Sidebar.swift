@@ -32,10 +32,10 @@ struct Sidebar: View {
         .toolbar {
             ToolbarItem {
                 Menu {
-                    Button("New Command…") { model.requestNew() }
-                    Button("Add from Project Folder…") { model.requestImport() }
+                    Button("New command…") { model.requestNew() }
+                    Button("Add from project folder…") { model.requestImport() }
                     Divider()
-                    Button("New Group") {
+                    Button("New group") {
                         let group = model.addGroup(named: "")
                         groupName = group.name
                         renamingGroup = group.id
@@ -85,7 +85,7 @@ struct Sidebar: View {
     private func header(for section: ConfigSection) -> some View {
         if let group = section.group {
             if renamingGroup == group.id {
-                TextField("Group Name", text: $groupName)
+                TextField("Group name", text: $groupName)
                     .onSubmit {
                         model.renameGroup(group.id, to: groupName)
                         renamingGroup = nil
@@ -98,18 +98,18 @@ struct Sidebar: View {
                         renamingGroup = group.id
                     }
                     .contextMenu {
-                        Button("Start All") { model.commands(inGroup: group.id).forEach { model.start($0.id) } }
-                        Button("Stop All") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
+                        Button("Start all") { model.commands(inGroup: group.id).forEach { model.start($0.id) } }
+                        Button("Stop all") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
                         Divider()
                         Button("Rename…") {
                             groupName = group.name
                             renamingGroup = group.id
                         }
-                        Button("Delete Group", role: .destructive) { model.deleteGroup(group.id) }
+                        Button("Delete group", role: .destructive) { model.deleteGroup(group.id) }
                     }
             }
         } else if !model.config.groups.isEmpty {
-            Text("No Group")
+            Text("No group")
         }
     }
 

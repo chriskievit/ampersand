@@ -27,23 +27,23 @@ struct CommandForm<Header: View, Footer: View>: View {
             Section {
                 TextField("Name", text: $draft.name, prompt: Text(namePrompt))
                 Picker("Group", selection: groupSelection) {
-                    Text("No Group").tag(String?.none)
+                    Text("No group").tag(String?.none)
                     ForEach(model.config.groups) { group in
                         Text(group.name).tag(String?.some(group.id))
                     }
                     Divider()
-                    Text("New Group…").tag(String?.some(Self.newGroupTag))
+                    Text("New group…").tag(String?.some(Self.newGroupTag))
                 }
             }
             Section("Location") {
-                LabeledContent("Working Directory") {
+                LabeledContent("Working directory") {
                     HStack {
-                        TextField("Working Directory", text: $draft.cwd, prompt: Text("Not set"))
+                        TextField("Working directory", text: $draft.cwd, prompt: Text("Not set"))
                             .labelsHidden()
                         Button("Choose…") { chooseFolder() }
                     }
                 }
-                LabeledContent("Environment File") {
+                LabeledContent("Environment file") {
                     if draft.envFile.isEmpty {
                         HStack {
                             Text("Not set").foregroundStyle(.secondary)
@@ -66,10 +66,10 @@ struct CommandForm<Header: View, Footer: View>: View {
             Section("Network") {
                 TextField("Port", text: $draft.portText,
                           prompt: Text(draft.makeSpec().port.map(String.init) ?? "None"))
-                Picker("Health Check", selection: $draft.health) {
+                Picker("Health check", selection: $draft.health) {
                     Text("None").tag(HealthChoice.none)
-                    Text("Port Accepts Connections").tag(HealthChoice.port)
-                    Text("URL Responds").tag(HealthChoice.url)
+                    Text("Port accepts connections").tag(HealthChoice.port)
+                    Text("URL responds").tag(HealthChoice.url)
                 }
                 if draft.health == .url {
                     TextField("URL", text: $draft.healthURL, prompt: Text(verbatim: "http://localhost:3000/health"))
@@ -82,7 +82,7 @@ struct CommandForm<Header: View, Footer: View>: View {
             footer()
         }
         .formStyle(.grouped)
-        .alert("New Group", isPresented: $askingForGroup) {
+        .alert("New group", isPresented: $askingForGroup) {
             TextField("Name", text: $newGroupName)
             Button("Create") { draft.group = model.addGroup(named: newGroupName).id }
             Button("Cancel", role: .cancel) {}
@@ -151,7 +151,7 @@ struct CommandForm<Header: View, Footer: View>: View {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.prompt = "Use Folder"
+        panel.prompt = "Use folder"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         draft.cwd = (url.path as NSString).abbreviatingWithTildeInPath
     }
@@ -161,7 +161,7 @@ struct CommandForm<Header: View, Footer: View>: View {
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
         panel.showsHiddenFiles = true
-        panel.prompt = "Use File"
+        panel.prompt = "Use file"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         draft.envFile = (url.path as NSString).abbreviatingWithTildeInPath
     }
