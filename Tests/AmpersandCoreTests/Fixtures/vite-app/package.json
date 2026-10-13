@@ -1,0 +1,10 @@
+{
+  "name": "web",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite --port 5174",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6007",
+    "test": "vitest"
+  }
+}
