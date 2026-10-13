@@ -1,8 +1,8 @@
 ---
 version: 1
-slug: "ampersand-views-commandbarview-swift"
-primary_target: "Ampersand/Views/CommandBarView.swift"
-related_targets: ["Ampersand/Views/MainWindow.swift"]
+slug: "sources-ampersandapp-views-commandbarview-swift"
+primary_target: "Sources/AmpersandApp/Views/CommandBarView.swift"
+related_targets: ["Sources/AmpersandApp/Window/MainWindow.swift"]
 ---
 
 # Surface brief: Ampersand popover and window
