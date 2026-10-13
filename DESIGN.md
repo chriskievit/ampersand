@@ -78,7 +78,7 @@ Ampersand looks like it shipped with macOS 26. The popover is a Spotlight-style 
 
 Density is that of a native list: one text style, ranked by weight and secondary label colour, tabular figures for every live number. Success is quiet (a filled green circle, a hollow circle for a clean finish); failure is the only thing that waits for attention (a red octagon with its exit stamp, preselected when the popover opens).
 
-**The Ambient Job (philosophy).** The `&` sends a job to the background so you can stop thinking about it, and the popover follows that stance. Quay-style service catalogues show an inventory with every number on every row; Ampersand stays quiet and answers intent. Four principles, applied without hiding anything a user needs:
+**The Ambient Job (philosophy).** The `&` sends a job to the background so you can stop thinking about it, and the popover follows that stance. Service catalogues show an inventory with every number on every row; Ampersand stays quiet and answers intent. Four principles, applied without hiding anything a user needs:
 1. *Silence is the success state.* A healthy row shows its uptime; CPU and memory appear on the row only when high, and always in the expanded row.
 2. *Attention is earned by change.* Failures keep their stamp and are selected on open. Do not push this into extra summaries or digests: the popover stays succinct.
 3. *Intent first, inventory second.* The filter field is also the prompt: text that matches no command is offered as a new one.
