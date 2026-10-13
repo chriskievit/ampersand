@@ -166,3 +166,25 @@ func eventually(_ s: Supervisor, timeout: Duration = .seconds(3), _ kind: Comman
         await s.shutdown()
     }
 }
+
+@Suite(.serialized) struct SupervisorFloodTests {
+    @Test func floodIsBatchedBeforeLeavingTheActor() async throws {
+        let s = makeSupervisor("yes amp | head -n 60000; sleep 5")
+        let counts = Task {
+            var events = 0, lines = 0
+            for await event in s.events {
+                if case .output(let newLines, _) = event {
+                    events += 1
+                    lines += newLines.count
+                    if lines >= 60_000 { break }
+                }
+            }
+            return (events, lines)
+        }
+        await s.start()
+        let (events, lines) = await counts.value
+        #expect(lines == 60_000)
+        #expect(events < 200)   // ~50 ms batches, not one event per pty read
+        await s.shutdown()
+    }
+}

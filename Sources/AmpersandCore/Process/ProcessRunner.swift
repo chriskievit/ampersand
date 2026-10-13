@@ -67,11 +67,14 @@ public final class ProcessRunner: RunningProcess {
 
         let readSource = DispatchSource.makeReadSource(fileDescriptor: master, queue: queue)
         readSource.setEventHandler {
+            // Drain everything available, then yield once: pty reads are often a single line.
             var buffer = [UInt8](repeating: 0, count: 16_384)
-            while true {
+            var collected: [UInt8] = []
+            defer { if !collected.isEmpty { continuation.yield(collected) } }
+            while collected.count < 1_048_576 {
                 let count = Darwin.read(master, &buffer, buffer.count)
                 if count > 0 {
-                    continuation.yield(Array(buffer[0..<count]))
+                    collected.append(contentsOf: buffer[0..<count])
                     continue
                 }
                 if count < 0 && (errno == EAGAIN || errno == EINTR) { return }

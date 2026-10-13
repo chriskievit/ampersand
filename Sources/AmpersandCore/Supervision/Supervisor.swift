@@ -22,6 +22,11 @@ public actor Supervisor {
     private var backoffTask: Task<Void, Never>?
     /// The termination in flight, so a second stop (or quit) waits for the group to die.
     private var stopTask: Task<Void, Never>?
+    /// Output collected since the last `.output` event; flushed every ~50 ms so a noisy
+    /// command produces a bounded number of events (spec 5.3).
+    private var pendingLines: [String] = []
+    private var flushScheduled = false
+    private static let outputBatchInterval: Duration = .milliseconds(50)
 
     public private(set) var status: CommandStatus = .stopped {
         didSet { if status != oldValue { eventContinuation.yield(.status(status)) } }
@@ -54,6 +59,7 @@ public actor Supervisor {
 
     public func clearLog() {
         log.clear()
+        pendingLines.removeAll()
         eventContinuation.yield(.logCleared)
     }
 
@@ -154,8 +160,20 @@ public actor Supervisor {
 
     private func ingest(_ chunk: [UInt8], run: Int) {
         guard run == runID else { return }
-        let newLines = log.append(chunk)
-        eventContinuation.yield(.output(newLines: newLines, partialLine: log.partialLine))
+        pendingLines += log.append(chunk)
+        guard !flushScheduled else { return }
+        flushScheduled = true
+        Task {
+            try? await Task.sleep(for: Self.outputBatchInterval)
+            self.flushOutput()
+        }
+    }
+
+    private func flushOutput() {
+        flushScheduled = false
+        guard !pendingLines.isEmpty || !log.partialLine.isEmpty else { return }
+        eventContinuation.yield(.output(newLines: pendingLines, partialLine: log.partialLine))
+        pendingLines.removeAll(keepingCapacity: true)
     }
 
     private func promote(run: Int) {
@@ -165,6 +183,7 @@ public actor Supervisor {
 
     private func handleExit(_ exit: ProcessExit, run: Int) {
         guard run == runID else { return }
+        flushOutput()   // the last lines (often the error) arrive before the exit status
         let now = clock.now
         if stopRequested {
             status = .stopped
