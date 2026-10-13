@@ -26,29 +26,33 @@ struct CommandRow: View {
                 TimelineView(.periodic(from: .now, by: 1)) { context in
                     trailing(now: context.date)
                 }
-                if hovering && !isSelected {
-                    Button {
-                        model.toggle(runtime.id)
-                    } label: {
-                        Image(systemName: runtime.status.isActive ? "stop.fill" : "play.fill")
-                    }
-                    .buttonStyle(.borderless)
-                    .help(runtime.status.isActive ? "Stop" : "Start")
-                    .accessibilityLabel(runtime.status.isActive ? "Stop" : "Start")
+                // Always laid out, only shown on hover, so the metrics never shift (spec 4.6).
+                Button {
+                    model.toggle(runtime.id)
+                } label: {
+                    Image(systemName: runtime.status.isActive ? "stop.fill" : "play.fill")
+                }
+                .buttonStyle(.borderless)
+                .help(runtime.status.isActive ? "Stop" : "Start")
+                .accessibilityLabel(runtime.status.isActive ? "Stop" : "Start")
+                .opacity(hovering && !isSelected ? 1 : 0)
+                .allowsHitTesting(hovering && !isSelected)
+                .accessibilityHidden(!(hovering && !isSelected))
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 6)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 6, style: .continuous).fill(.selection)
                 }
             }
+            .environment(\.backgroundProminence, isSelected ? .increased : .standard)
             if isSelected {
                 ExpandedRow(runtime: runtime, model: model)
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background {
-            if isSelected {
-                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.selection.opacity(0.22))
-            }
-        }
+        .padding(.bottom, isSelected ? 6 : 0)
         .contentShape(.rect)
         .onTapGesture { model.popoverSelection = isSelected ? nil : runtime.id }
         .onHover { hovering = $0 }
@@ -64,7 +68,7 @@ struct CommandRow: View {
 
     @ViewBuilder
     private func trailing(now: Date) -> some View {
-        if let owner = runtime.portConflict, let port = runtime.spec.port {
+        if let owner = runtime.portConflict, let port = runtime.spec.port, !isSelected {
             Text(verbatim: "port \(port) in use by \(owner.name)")
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
@@ -85,7 +89,7 @@ struct CommandRow: View {
             .monospacedDigit()
         } else {
             Text(StatusText.stateWord(runtime.status.kind))
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
         }
     }
 

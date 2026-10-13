@@ -18,6 +18,7 @@ struct StatusGlyph: View {
     var body: some View {
         Image(systemName: symbol)
             .foregroundStyle(color)
+            .frame(width: 16)   // the octagon is wider than the circles; keep names aligned
             .overlay(alignment: .bottomTrailing) {
                 if healthFailing && kind == .running {
                     Image(systemName: "exclamationmark.triangle.fill")

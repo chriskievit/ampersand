@@ -32,8 +32,27 @@ struct CommandBarView: View {
             if visible {
                 filter = ""
                 filterFocused = true
+                selectInitialRow()
             }
         })
+        .onChange(of: filter) { _, query in
+            // Typing narrows the list; keep a match selected so Return acts on it.
+            if !query.isEmpty { model.popoverSelection = visibleRuntimes.first?.id }
+        }
+    }
+
+    /// The contract's first viewport: open on the row that needs attention, else where you were.
+    private func selectInitialRow() {
+        let visible = visibleRuntimes
+        if let attention = visible.first(where: {
+            [.exited, .gaveUp, .failed].contains($0.status.kind) || $0.portConflict != nil
+        }) {
+            model.popoverSelection = attention.id
+        } else if let current = model.popoverSelection, visible.contains(where: { $0.id == current }) {
+            return
+        } else {
+            model.popoverSelection = visible.first?.id
+        }
     }
 
     // MARK: Header
@@ -107,6 +126,14 @@ struct CommandBarView: View {
             ForEach(visibleSections) { entry in
                 if let group = entry.section.group {
                     GroupHeader(group: group, model: model)
+                } else if !model.config.groups.isEmpty {
+                    Text("No Group")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.top, 8)
+                        .padding(.bottom, 2)
+                        .accessibilityAddTraits(.isHeader)
                 }
                 ForEach(entry.runtimes) { runtime in
                     CommandRow(runtime: runtime, model: model, isSelected: runtime.id == model.popoverSelection)
@@ -128,21 +155,30 @@ struct CommandBarView: View {
                 Label("Add", systemImage: "plus")
             }
             .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
             .fixedSize()
             Spacer()
             Button("Open Ampersand") { model.openMainWindow() }
                 .buttonStyle(.borderless)
-            Button(quitTitle) { NSApp.terminate(nil) }
-                .buttonStyle(.borderless)
+                .lineLimit(1)
+            // The longest label that fits: "Quit and Stop 3 Processes" → "Quit and Stop 3" → "Quit".
+            ViewThatFits(in: .horizontal) {
+                ForEach(quitTitles, id: \.self) { title in
+                    Button(title) { NSApp.terminate(nil) }
+                        .buttonStyle(.borderless)
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
     }
 
-    private var quitTitle: String {
+    private var quitTitles: [String] {
         let count = model.activeCount
-        guard count > 0 else { return "Quit" }
-        return "Quit and Stop \(count) \(count == 1 ? "Process" : "Processes")"
+        guard count > 0 else { return ["Quit"] }
+        return ["Quit and Stop \(count) \(count == 1 ? "Process" : "Processes")", "Quit and Stop \(count)", "Quit"]
     }
 
     // MARK: Keyboard (spec 4.2)

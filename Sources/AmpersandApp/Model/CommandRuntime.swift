@@ -35,9 +35,11 @@ final class CommandRuntime: Identifiable {
         self.supervisor = supervisor
     }
 
+    /// The last five non-blank lines, for the popover's log tail.
     var recentLines: [String] {
-        var tail = Array(lines.suffix(partialLine.isEmpty ? 5 : 4))
-        if !partialLine.isEmpty { tail.append(partialLine) }
+        let blank: (String) -> Bool = { $0.trimmingCharacters(in: .whitespaces).isEmpty }
+        var tail = Array(lines.lazy.reversed().filter { !blank($0) }.prefix(blank(partialLine) ? 5 : 4).reversed())
+        if !blank(partialLine) { tail.append(partialLine) }
         return tail
     }
 

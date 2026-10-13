@@ -12,7 +12,9 @@ struct ExpandedRow: View {
             logTail
             actions
         }
-        .padding(.leading, 24)
+        .controlSize(.small)
+        .padding(.leading, 32)   // aligns with the name: row padding + glyph + spacing
+        .padding(.trailing, 8)
     }
 
     @ViewBuilder
@@ -51,7 +53,7 @@ struct ExpandedRow: View {
         let lines = runtime.recentLines
         if lines.isEmpty {
             Text("No output yet.")
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.secondary)
         } else {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(Array(lines.enumerated()), id: \.offset) { _, line in
@@ -68,8 +70,11 @@ struct ExpandedRow: View {
 
     private var actions: some View {
         HStack(spacing: 8) {
-            Button(primaryTitle) { model.toggle(runtime.id) }
-                .help("Return")
+            if runtime.portConflict == nil {   // the conflict notice offers its own start buttons
+                Button(primaryTitle) { model.toggle(runtime.id) }
+                    .buttonStyle(.borderedProminent)
+                    .help("Return")
+            }
             Button("Restart") { model.restart(runtime.id) }
                 .disabled(!runtime.status.isActive)
                 .help("⌘R")
@@ -80,7 +85,6 @@ struct ExpandedRow: View {
                     .help("⌘O")
             }
         }
-        .controlSize(.small)
     }
 
     private var primaryTitle: String {
