@@ -96,11 +96,11 @@ purpose: commands and one level of groups, without tags, dashboards or plugins.
 
 **Requirements:** macOS 26 Tahoe or later on Apple silicon.
 
-1. Download `Ampersand-x.y.z.zip` from the
+1. Download `Ampersand-x.y.z.dmg` from the
    [latest release](https://github.com/chriskievit/ampersand/releases/latest)
-   and unzip it.
-2. Move `Ampersand.app` to `/Applications`.
-3. Open it. The first time, macOS blocks it (see below).
+   and open it.
+2. Drag Ampersand onto the Applications folder in the window that opens.
+3. Open Ampersand from Applications. The first time, macOS blocks it (see below).
 
 ### "Apple could not verify Ampersand"
 
