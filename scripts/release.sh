@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds a versioned, zipped Ampersand.app for a GitHub release.
+# Builds a versioned Ampersand.app, as a DMG and a zip, for a GitHub release.
 # Usage: scripts/release.sh <version>   (semantic-release passes the next version)
 set -euo pipefail
 cd "${0:A:h}/.."
@@ -9,4 +9,4 @@ VERSION="$1"
 APP="$(scripts/bundle.sh release | tail -1)"
 # ditto keeps the bundle's extended attributes and signature intact; zip does not.
 ditto -c -k --keepParent "$APP" "build/Ampersand-$VERSION.zip"
-echo "build/Ampersand-$VERSION.zip"
+scripts/dmg.sh "$APP" "build/Ampersand-$VERSION.dmg"

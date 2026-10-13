@@ -17,7 +17,12 @@
     ],
     [
       "@semantic-release/github",
-      { "assets": [{ "path": "build/Ampersand-*.zip", "label": "Ampersand.app (zip)" }] }
+      {
+        "assets": [
+          { "path": "build/Ampersand-*.dmg", "label": "Ampersand.dmg (installer)" },
+          { "path": "build/Ampersand-*.zip", "label": "Ampersand.app (zip)" }
+        ]
+      }
     ]
   ]
 }
