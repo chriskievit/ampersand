@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-13T00:00:00Z",
+  "title": "Design System: Ampersand",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "System Accent",
+        "canonical": "Color.accentColor (controlAccentColor)",
+        "darkValue": "#0A84FF",
+        "tonalRamp": [
+          "#001a3d",
+          "#002f6b",
+          "#004499",
+          "#0060d6",
+          "#007AFF",
+          "#4d9fff",
+          "#99c7ff",
+          "#e0eeff"
+        ]
+      },
+      "status-running": {
+        "role": "secondary",
+        "displayName": "Running Green",
+        "canonical": "Color.green (systemGreen)",
+        "darkValue": "#30D158",
+        "tonalRamp": [
+          "#0b2e14",
+          "#14522a",
+          "#1f7a3e",
+          "#2aa553",
+          "#34C759",
+          "#6fd98a",
+          "#a9eabb",
+          "#e2f8e8"
+        ]
+      },
+      "status-transition": {
+        "role": "secondary",
+        "displayName": "Transition Orange",
+        "canonical": "Color.orange (systemOrange)",
+        "darkValue": "#FF9F0A",
+        "tonalRamp": [
+          "#3d2400",
+          "#6b3f00",
+          "#995a00",
+          "#cc7800",
+          "#FF9500",
+          "#ffb44d",
+          "#ffd399",
+          "#fff1e0"
+        ]
+      },
+      "status-failed": {
+        "role": "secondary",
+        "displayName": "Failure Red",
+        "canonical": "Color.red (systemRed)",
+        "darkValue": "#FF453A",
+        "tonalRamp": [
+          "#3d0d0a",
+          "#6b1712",
+          "#99211a",
+          "#cc2c23",
+          "#FF3B30",
+          "#ff7a73",
+          "#ffb8b3",
+          "#ffe9e8"
+        ]
+      },
+      "health-badge": {
+        "role": "secondary",
+        "displayName": "Health Yellow",
+        "canonical": "Color.yellow (systemYellow)",
+        "darkValue": "#FFD60A",
+        "tonalRamp": [
+          "#3d3100",
+          "#6b5600",
+          "#997a00",
+          "#cca300",
+          "#FFCC00",
+          "#ffdb4d",
+          "#ffe999",
+          "#fff8e0"
+        ]
+      },
+      "label": {
+        "role": "neutral",
+        "displayName": "Label",
+        "canonical": "Color.primary (labelColor)",
+        "darkValue": "#FFFFFFD9",
+        "tonalRamp": [
+          "#000000D9",
+          "#000000B3",
+          "#0000008C",
+          "#00000066",
+          "#00000040",
+          "#00000026",
+          "#0000001A",
+          "#0000000D"
+        ]
+      },
+      "secondary-label": {
+        "role": "neutral",
+        "displayName": "Secondary Label",
+        "canonical": "Color.secondary (secondaryLabelColor)",
+        "darkValue": "#FFFFFF8C",
+        "tonalRamp": [
+          "#00000080",
+          "#00000066",
+          "#0000004D",
+          "#00000033",
+          "#00000026",
+          "#0000001A",
+          "#00000012",
+          "#0000000A"
+        ]
+      },
+      "separator": {
+        "role": "neutral",
+        "displayName": "Separator",
+        "canonical": "Divider() (separatorColor)",
+        "darkValue": "#FFFFFF1A",
+        "tonalRamp": [
+          "#0000004D",
+          "#00000040",
+          "#00000033",
+          "#00000026",
+          "#0000001A",
+          "#00000014",
+          "#0000000D",
+          "#00000008"
+        ]
+      },
+      "icon-prompt-green": {
+        "role": "tertiary",
+        "displayName": "Prompt Green (app icon only)",
+        "canonical": "#4CD964 in Resources/Ampersand.icon/Assets/prompt.svg",
+        "darkValue": null,
+        "tonalRamp": [
+          "#0f2e15",
+          "#1b5226",
+          "#287a38",
+          "#38a84d",
+          "#4CD964",
+          "#7fe490",
+          "#b3efbd",
+          "#e6faea"
+        ]
+      },
+      "icon-graphite": {
+        "role": "neutral",
+        "displayName": "Graphite (app icon only)",
+        "canonical": "srgb(0.16, 0.175, 0.20) automatic-gradient in icon.json",
+        "darkValue": null,
+        "tonalRamp": [
+          "#0f1013",
+          "#1c1f23",
+          "#292D33",
+          "#3d434c",
+          "#5a626e",
+          "#818994",
+          "#b0b6be",
+          "#e3e6ea"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "The one popover text style (.body, 13 pt on macOS): messages, buttons, metrics, stamps."
+      },
+      "body-emphasis": {
+        "displayName": "Body emphasis",
+        "purpose": "Medium weight: command names in popover rows."
+      },
+      "section-label": {
+        "displayName": "Section label",
+        "purpose": "Semibold, secondary colour: popover group headers and No Group."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "SF Mono at .body: command field, log tail and full log, env names and values."
+      },
+      "numeric": {
+        "displayName": "Numeric",
+        "purpose": ".monospacedDigit() on every live or counted number."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "state-spring",
+        "value": "SwiftUI .snappy spring (~200 ms)",
+        "purpose": "Row expand/collapse, selection change, banner appear. The only timing token."
+      },
+      {
+        "name": "reduce-motion-crossfade",
+        "value": ".easeInOut(duration: 0.2), opacity only",
+        "purpose": "Replaces the spring and move transitions under Reduce Motion; never a snap."
+      },
+      {
+        "name": "symbol-replace",
+        "value": ".contentTransition(.symbolEffect(.replace))",
+        "purpose": "Status glyph changes."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "popover",
+        "value": "360px fixed width, 480px max list height"
+      },
+      {
+        "name": "window-min",
+        "value": "760 x 460 px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Status Glyphs",
+      "kind": "custom",
+      "refersTo": "command-row",
+      "description": "Shape carries state; system colour confirms.",
+      "html": "<div class=\"ds-glyphs\"><span class=\"ds-g ds-run\"></span>running <span class=\"ds-g ds-trans\"></span>starting <span class=\"ds-g ds-fail\">&#x2715;</span>crashed <span class=\"ds-g ds-stop\"></span>stopped</div>",
+      "css": ".ds-glyphs{font:13px -apple-system,system-ui;color:rgba(0,0,0,.5);display:flex;gap:12px;align-items:center}.ds-g{display:inline-block;width:13px;height:13px;margin-right:4px;vertical-align:-2px;border-radius:50%}.ds-run{background:#34C759}.ds-trans{border:2px dashed #FF9500;box-sizing:border-box}.ds-fail{background:#FF3B30;color:#fff;font-size:8px;text-align:center;line-height:13px;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);border-radius:0}.ds-stop{border:1.5px solid rgba(0,0,0,.5);box-sizing:border-box}"
+    },
+    {
+      "name": "Command Row",
+      "kind": "custom",
+      "refersTo": "command-row",
+      "description": "Glyph, medium name, secondary port, tabular metrics; hover button reserved in layout.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-dot\"></span><b>api</b><span class=\"ds-sec\">:8080</span><span class=\"ds-sp\"></span><span class=\"ds-sec ds-num\">0.3%&nbsp;&nbsp;7 MB&nbsp;&nbsp;5m</span><button class=\"ds-hover\" aria-label=\"Stop\">&#9632;</button></div>",
+      "css": ".ds-row{width:340px;display:flex;align-items:center;gap:8px;padding:6px 8px;font:13px -apple-system,system-ui;color:rgba(0,0,0,.85);border-radius:6px}.ds-row b{font-weight:500}.ds-dot{width:13px;height:13px;border-radius:50%;background:#34C759;flex:none}.ds-sec{color:rgba(0,0,0,.5)}.ds-num{font-variant-numeric:tabular-nums}.ds-sp{flex:1}.ds-hover{border:0;background:none;color:rgba(0,0,0,.85);opacity:0;width:16px}.ds-row:hover .ds-hover{opacity:1}"
+    },
+    {
+      "name": "Command Row, selected",
+      "kind": "custom",
+      "refersTo": "command-row-selected",
+      "description": "System selection fill, 6 pt continuous radius, expanded log tail and small actions.",
+      "html": "<div class=\"ds-sel\"><div class=\"ds-selh\"><span class=\"ds-oct\"></span><b>worker</b><span class=\"ds-sp\"></span><span>gave up after 5 restarts · exit 1</span></div><pre class=\"ds-tail\">Error: Cannot find module ./queue</pre><div class=\"ds-acts\"><button class=\"ds-prim\">Start Again</button><button disabled>Restart</button><button>Show Log</button></div></div>",
+      "css": ".ds-sel{width:340px;font:13px -apple-system,system-ui}.ds-selh{display:flex;gap:8px;align-items:center;padding:6px 8px;background:#007AFF;color:#fff;border-radius:6px}.ds-selh b{font-weight:500}.ds-sp{flex:1}.ds-oct{width:13px;height:13px;background:#FF3B30;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%)}.ds-tail{margin:6px 8px 6px 32px;font:13px ui-monospace,'SF Mono',monospace;color:rgba(0,0,0,.5)}.ds-acts{display:flex;gap:8px;margin-left:32px}.ds-acts button{font:11px -apple-system,system-ui;padding:3px 10px;border-radius:6px;border:0;background:rgba(0,0,0,.08);color:rgba(0,0,0,.85)}.ds-acts .ds-prim{background:#007AFF;color:#fff}.ds-acts button:disabled{color:rgba(0,0,0,.25)}.ds-acts button:focus-visible{outline:3px solid rgba(0,122,255,.5)}"
+    },
+    {
+      "name": "Popover Inline Banner",
+      "kind": "card",
+      "refersTo": "popover-banner",
+      "description": "Feedback above the list; tertiary fill, 8 pt radius; never takes focus.",
+      "html": "<div class=\"ds-banner\"><span class=\"ds-i\">&#9888;</span><span class=\"ds-m\">Couldn’t save the configuration.</span><button>Retry</button><button class=\"ds-x\" aria-label=\"Dismiss\">&#x2715;</button></div>",
+      "css": ".ds-banner{width:320px;display:flex;gap:8px;align-items:baseline;padding:10px;border-radius:8px;background:rgba(0,0,0,.05);font:11px -apple-system,system-ui;color:rgba(0,0,0,.85)}.ds-i{color:rgba(0,0,0,.5)}.ds-m{flex:1}.ds-banner button{font:inherit;border:0;border-radius:5px;padding:2px 8px;background:rgba(0,0,0,.08)}.ds-banner .ds-x{background:none;color:rgba(0,0,0,.5)}"
+    },
+    {
+      "name": "Suggestion Chip",
+      "kind": "chip",
+      "refersTo": "suggestion-chip",
+      "description": "Detected part of a pasted command; click removes it.",
+      "html": "<button class=\"ds-chip\">port 3000 <span>&#x2297;</span></button>",
+      "css": ".ds-chip{font:11px -apple-system,system-ui;padding:2px 8px;border-radius:6px;border:0;background:rgba(0,0,0,.08);color:rgba(0,0,0,.85)}.ds-chip span{color:rgba(0,0,0,.5)}.ds-chip:hover{background:rgba(0,0,0,.12)}.ds-chip:focus-visible{outline:3px solid rgba(0,122,255,.5)}"
+    },
+    {
+      "name": "Popover Filter Header",
+      "kind": "input",
+      "refersTo": "popover",
+      "description": "Plain filter field with focus and a trailing running count.",
+      "html": "<div class=\"ds-filter\"><span class=\"ds-sec\">&#x2315;</span><input placeholder=\"Filter Commands\"><span class=\"ds-sec ds-num\">2 running</span></div>",
+      "css": ".ds-filter{width:336px;display:flex;gap:8px;padding:12px;font:13px -apple-system,system-ui;border-bottom:1px solid rgba(0,0,0,.1)}.ds-filter input{flex:1;border:0;background:none;font:inherit;outline:none}.ds-sec{color:rgba(0,0,0,.5)}.ds-num{font-variant-numeric:tabular-nums}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The System's Own Command Bar",
+    "overview": "Ampersand looks like it shipped with macOS 26. The popover is a Spotlight-style command bar on the system's Liquid Glass popover material; the window is a System Settings-style `NavigationSplitView`. Nothing is custom-drawn: system text styles, semantic system colours, system materials, SF Symbols and stock controls carry the whole interface. Identity comes from behaviour (filter field with focus, arrow keys, Return to act) and from one fixed status-glyph vocabulary, never from a palette or a typeface.\n\nDensity is that of a native list: one text style, ranked by weight and secondary label colour, tabular figures for every live number. Success is quiet (a filled green circle, a hollow circle for a clean finish); failure is the only thing that waits for attention (a red octagon with its exit stamp, preselected when the popover opens).\n\n**The Native First Rule.** The #1 design driver is native macOS feel, with System Settings as the reference for the window. When a native choice and an Impeccable choice differ, ask the user before building; do not decide either way alone. Recorded Impeccable choice the user approved: paste-suggestion chips in the command form.",
+    "keyCharacteristics": [
+      "System text styles, semantic system colours and system materials only; no hex, no fixed font size, no custom shadow in views.",
+      "State is carried by glyph shape first; colour is secondary and lives only in the glyph.",
+      "The accent colour appears only on pressables and on selection.",
+      "SF Mono only for real code and data: command lines, log lines, environment names and values.",
+      "Layout never moves under the pointer: hover affordances are always laid out and shown by opacity."
+    ],
+    "rules": [
+      {
+        "name": "The Native First Rule",
+        "body": "The #1 design driver is native macOS feel, with System Settings as the reference for the window. When a native choice and an Impeccable choice differ, ask the user before building; do not decide either way alone. Recorded Impeccable choice the user approved: paste-suggestion chips in the command form.",
+        "section": "overview"
+      },
+      {
+        "name": "The Shape Before Colour Rule",
+        "body": "Every status is readable in greyscale: filled, dashed, octagon, hollow. Colour only confirms. The menu bar icon is a template image, so its attention signal is a dot (shape), never red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Accent Is a Pressable Rule",
+        "body": "The accent colour marks things you can press and the current selection. Status colour never leaks into text, rows or backgrounds.",
+        "section": "colors"
+      },
+      {
+        "name": "The Log Keeps Its Colours Rule",
+        "body": "ANSI colours in log output are content: they render, mapped to the nearest system colour (`systemRed`, `systemGreen`, `labelColor` …) so they adapt to appearance. Dim is 60 % alpha.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Text Style Rule",
+        "body": "The popover uses `.body` only. Rank by weight (regular / medium / semibold) and `.secondary`, never by size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono Is Data Rule",
+        "body": "SF Mono is for text a shell or process produced or will consume. Never for labels, headings, or a \"technical\" look.",
+        "section": "typography"
+      },
+      {
+        "name": "The Fixed Columns Rule",
+        "body": "Nothing shifts when state, hover or numbers change: fixed glyph width, tabular digits, hover controls reserved in layout.",
+        "section": "layout"
+      },
+      {
+        "name": "The System Materials Only Rule",
+        "body": "If depth is needed, use a system material or a system container (`GroupBox`, `Form` section). Never hand-roll glass, blur or `.shadow`.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do ask the user whenever a native macOS choice and an Impeccable choice differ.",
+      "Do use system text styles, semantic system colours, system materials and stock controls; take System Settings as the window reference.",
+      "Do carry status by glyph shape (filled, dashed, octagon, hollow) with system colour as confirmation.",
+      "Do use `.monospacedDigit()` on every live number and reserve space for hover controls so nothing shifts.",
+      "Do keep exit stamps until the user acts, and open the popover on the row that needs attention.",
+      "Do use the `.snappy` spring for state changes and a 0.2 s crossfade under Reduce Motion.",
+      "Do keep a control visible and disabled (Restart on a stopped command) rather than hiding it, as macOS does.",
+      "Do put window notices in a `GroupBox` band on `.bar` in the detail pane."
+    ],
+    "donts": [
+      "Don't put a hex colour, a fixed font size, a custom shadow, a gradient or hand-rolled glass in a view.",
+      "Don't use SF Mono for anything that is not code, command or log data.",
+      "Don't use the accent colour for status, or status colour outside the glyph.",
+      "Don't use more than the `.body` text style in the popover.",
+      "Don't add toggle-switch rows to the popover; it is a command bar, not a settings list.",
+      "Don't use kickers or eyebrow labels, cards as structure, hero metrics, or sparklines/rings standing in for data.",
+      "Don't confirm deletes with a dialog; offer Undo.",
+      "Don't use SF Pro or SF Symbols in the app icon."
+    ]
+  }
+}

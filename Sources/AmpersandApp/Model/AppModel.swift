@@ -8,6 +8,8 @@ struct Banner: Identifiable, Equatable {
     let id = UUID()
     var message: String
     var action: Action?
+    /// Problems get the warning triangle; plain information gets the info icon (DESIGN.md).
+    var isProblem = true
 }
 
 enum EditorRequest: Identifiable, Equatable {
@@ -74,7 +76,7 @@ final class AppModel {
         }
         config.commands.forEach(makeRuntime)
         if cleaned > 0 {
-            show(Banner(message: "Cleaned up \(cleaned) \(cleaned == 1 ? "process" : "processes") from the last session."))
+            show(Banner(message: "Cleaned up \(cleaned) \(cleaned == 1 ? "process" : "processes") from the last session.", isProblem: false))
         }
         for spec in config.commands where spec.autoStart { start(spec.id) }
         observeScreenLock()

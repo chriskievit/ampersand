@@ -138,7 +138,7 @@ private struct WindowNotices: View {
                             }
                             .fixedSize()   // buttons keep their size; the message wraps
                         } label: {
-                            Label(banner.message, systemImage: banner.action == nil ? "info.circle" : "exclamationmark.triangle")
+                            Label(banner.message, systemImage: banner.isProblem ? "exclamationmark.triangle" : "info.circle")
                         }
                     }
                 }
