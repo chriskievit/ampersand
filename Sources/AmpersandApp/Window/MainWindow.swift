@@ -67,8 +67,13 @@ private struct CommandDetail: View {
                        systemImage: runtime.status.isActive ? "stop.fill" : "play.fill") { model.toggle(runtime.id) }
                 Button("Restart", systemImage: "arrow.clockwise") { model.restart(runtime.id) }
                     .disabled(!runtime.status.isActive)
-                if runtime.spec.port != nil {
-                    Button("Open in Browser", systemImage: "safari") { model.openInBrowser(runtime.id) }
+                Menu("More", systemImage: "ellipsis.circle") {
+                    Button("Open in Browser") { model.openInBrowser(runtime.id) }
+                        .disabled(runtime.spec.port == nil)
+                    Divider()
+                    Button("Clear Log") { model.clearLog(runtime.id) }
+                    Button("Copy Log") { model.copyLog(runtime.id) }
+                    Button("Export Log…") { model.exportLog(runtime.id) }
                 }
             }
         }
@@ -81,17 +86,18 @@ private struct CommandDetail: View {
     private var logPane: some View {
         LogView(runtime: runtime, totalCommitted: runtime.totalCommitted, partialLine: runtime.partialLine,
                 generation: runtime.logGeneration, follow: $follow)
+            .overlay {
+                if runtime.lines.isEmpty && runtime.partialLine.isEmpty {
+                    ContentUnavailableView("No Output", systemImage: "text.alignleft",
+                                           description: Text(runtime.status.isActive
+                                                             ? "Waiting for the command to print something."
+                                                             : "Start the command to see its output."))
+                }
+            }
             .overlay(alignment: .bottomTrailing) {
                 if !follow {
                     Button("Jump to Latest", systemImage: "arrow.down") { follow = true }
                         .padding()
-                }
-            }
-            .toolbar {
-                ToolbarItemGroup {
-                    Button("Clear", systemImage: "trash") { model.clearLog(runtime.id) }
-                    Button("Copy All", systemImage: "doc.on.doc") { model.copyLog(runtime.id) }
-                    Button("Export…", systemImage: "square.and.arrow.up") { model.exportLog(runtime.id) }
                 }
             }
     }
@@ -104,7 +110,7 @@ private struct CommandDetail: View {
 }
 
 /// Feedback the window must show itself: banners (save, import and export errors) and a
-/// start blocked by a port conflict (audit P1: these were visible only in the popover).
+/// start blocked by a port conflict, as native grouped boxes above the content.
 private struct WindowNotices: View {
     let model: AppModel
 
@@ -115,24 +121,39 @@ private struct WindowNotices: View {
         if model.banner != nil || conflict != nil {
             VStack(spacing: 8) {
                 if let banner = model.banner {
-                    InlineBanner(banner: banner, model: model)
+                    GroupBox {
+                        LabeledContent {
+                            HStack {
+                                switch banner.action {
+                                case .retrySave: Button("Retry") { model.retrySave() }
+                                case .revealConfig: Button("Show in Finder") { model.revealConfig() }
+                                case nil: EmptyView()
+                                }
+                                Button("Dismiss") { model.banner = nil }
+                            }
+                        } label: {
+                            Label(banner.message, systemImage: "info.circle")
+                        }
+                    }
                 }
                 if let (runtime, owner) = conflict {
-                    HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.yellow)
-                        Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
-                        Spacer(minLength: 4)
-                        Button("Start Anyway") { model.start(runtime.id, force: true) }
-                        Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
+                    GroupBox {
+                        LabeledContent {
+                            HStack {
+                                Button("Start Anyway") { model.start(runtime.id, force: true) }
+                                Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
+                            }
+                        } label: {
+                            Label {
+                                Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
+                            } icon: {
+                                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
+                            }
+                        }
                     }
-                    .controlSize(.small)
-                    .padding(10)
-                    .background(.fill.tertiary, in: .rect(cornerRadius: 8, style: .continuous))
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding()
         }
     }
 }

@@ -12,23 +12,59 @@ struct ProjectImportSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Add from Project Folder")
-                .font(.headline)
-            if let project {
-                scriptList(project)
-            } else if let folder {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("No package.json in “\(folder.lastPathComponent)”. Choose another folder, or add the command by hand.")
-                    HStack {
-                        Button("Choose Folder…") { chooseFolder() }
-                        Button("Add Command…") { model.editorRequest = .new }
+        VStack(spacing: 0) {
+            Form {
+                Section {
+                    LabeledContent("Project Folder") {
+                        HStack {
+                            if let folder {
+                                Text((folder.path as NSString).abbreviatingWithTildeInPath)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+                            Button(folder == nil ? "Choose…" : "Change…") { chooseFolder() }
+                        }
+                    }
+                } header: {
+                    Text("Add from Project Folder").font(.headline)
+                } footer: {
+                    if folder == nil {
+                        Text("Choose or drop a folder that contains a package.json.")
+                            .foregroundStyle(.secondary)
+                    } else if project == nil {
+                        Text("There’s no package.json in this folder. Choose another one, or add the command by hand.")
+                            .foregroundStyle(.secondary)
                     }
                 }
-            } else {
-                dropZone
+                if let project {
+                    Section {
+                        ForEach(project.scripts) { script in
+                            Toggle(isOn: binding(for: script.name)) {
+                                Text(script.name)
+                                Text(script.body)
+                                    .font(.system(.body, design: .monospaced))
+                                    .lineLimit(1)
+                                    .truncationMode(.tail)
+                            }
+                        }
+                    } header: {
+                        Text("\(project.name) · \(project.packageManager)")
+                    } footer: {
+                        Text("Ports are detected from each script where possible.")
+                            .foregroundStyle(.secondary)
+                    }
+                    Section {
+                        Toggle("Put them in a new group named “\(project.name)”", isOn: $makeGroup)
+                            .disabled(selected.count < 2)
+                    }
+                }
             }
+            .formStyle(.grouped)
+            Divider()
             HStack {
+                if folder != nil && project == nil {
+                    Button("Add Command…") { model.editorRequest = .new }
+                }
                 Spacer()
                 Button("Cancel", role: .cancel) { close() }
                     .keyboardShortcut(.cancelAction)
@@ -36,54 +72,11 @@ struct ProjectImportSheet: View {
                     .keyboardShortcut(.defaultAction)
                     .disabled(project == nil || selected.isEmpty)
             }
+            .padding()
         }
-        .padding(20)
-        .frame(width: 540)
-    }
-
-    private var dropZone: some View {
-        VStack(spacing: 10) {
-            Text("Drop a project folder here, or choose one that contains a package.json.")
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-            Button("Choose Folder…") { chooseFolder() }
-        }
-        .frame(maxWidth: .infinity, minHeight: 160)
-        .background(.fill.quaternary, in: .rect(cornerRadius: 10, style: .continuous))
+        .frame(minWidth: 520, idealWidth: 560, minHeight: 360, idealHeight: 480)
         .dropDestination(for: URL.self) { urls, _ in
             if let url = urls.first { load(url) }
-        }
-    }
-
-    private func scriptList(_ project: DetectedProject) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(project.name).fontWeight(.semibold)
-                Text(project.packageManager).foregroundStyle(.secondary)
-                Spacer()
-                Button("Choose Another…") { chooseFolder() }
-            }
-            List(project.scripts) { script in
-                Toggle(isOn: binding(for: script.name)) {
-                    HStack {
-                        Text(script.name)
-                        Text(script.body)
-                            .font(.system(.body, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                        Spacer()
-                        if let port = script.port {
-                            Text(verbatim: ":\(port)")
-                                .foregroundStyle(.secondary)
-                                .monospacedDigit()
-                        }
-                    }
-                }
-            }
-            .frame(height: 220)
-            Toggle("Put them in a new group named “\(project.name)”", isOn: $makeGroup)
-                .disabled(selected.count < 2)
         }
     }
 

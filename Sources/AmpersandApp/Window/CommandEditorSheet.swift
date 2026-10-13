@@ -24,14 +24,10 @@ struct CommandEditorSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Text(title)
-                .font(.headline)
-                .padding(.top, 16)
-            CommandForm(draft: $draft, model: model, expanded: original != nil)
-            if let runtime = session.runtime {
-                Divider()
-                RunOnceConsole(runtime: runtime)
-                    .frame(height: 180)
+            CommandForm(draft: $draft, model: model, title: title, focusCommand: true) {
+                EmptyView()
+            } footer: {
+                if let runtime = session.runtime { RunOnceSection(runtime: runtime) }
             }
             Divider()
             HStack {
@@ -39,11 +35,6 @@ struct CommandEditorSheet: View {
                     session.isRunning ? session.stop() : session.run(draft.makeSpec(), model: model)
                 }
                 .disabled(!draft.isValid)
-                if let message = draft.validationMessage, !draft.commandText.isEmpty {
-                    Text(message)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
                 Spacer()
                 Button("Cancel", role: .cancel) { cancel() }
                     .keyboardShortcut(.cancelAction)
@@ -51,9 +42,9 @@ struct CommandEditorSheet: View {
                     .keyboardShortcut(.defaultAction)
                     .disabled(!draft.isValid)
             }
-            .padding(16)
+            .padding()
         }
-        .frame(minWidth: 560, idealWidth: 620, minHeight: 420, idealHeight: 560)
+        .frame(minWidth: 560, idealWidth: 600, minHeight: 420, idealHeight: 640)
         .interactiveDismissDisabled(isDirty)
         .confirmationDialog(original.map { "Save changes to “\($0.name)”?" } ?? "Save this command?",
                             isPresented: $confirmingDiscard) {

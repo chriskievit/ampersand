@@ -32,21 +32,21 @@ final class RunOnceSession {
     }
 }
 
-struct RunOnceConsole: View {
+/// The Run Once output as a form section: a status row and the live log.
+struct RunOnceSection: View {
     let runtime: CommandRuntime
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 6) {
-                StatusGlyph(kind: runtime.status.kind, healthFailing: false)
-                Text(StatusText.stamp(for: runtime.status, now: Date()) ?? StatusText.stateWord(runtime.status.kind))
-                    .foregroundStyle(.secondary)
-                Spacer()
+        Section("Test Run") {
+            LabeledContent("Status") {
+                HStack(spacing: 6) {
+                    StatusGlyph(kind: runtime.status.kind, healthFailing: false)
+                    Text(StatusText.stamp(for: runtime.status, now: Date()) ?? StatusText.stateWord(runtime.status.kind))
+                }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
             LogView(runtime: runtime, totalCommitted: runtime.totalCommitted, partialLine: runtime.partialLine,
                     generation: runtime.logGeneration, follow: .constant(true))
+                .frame(height: 160)
         }
     }
 }

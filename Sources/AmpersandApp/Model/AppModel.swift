@@ -245,6 +245,17 @@ final class AppModel {
         openMainWindow()
     }
 
+    /// An edit from the auto-applying Settings tab: saves it and registers Undo back to `previous`.
+    @discardableResult
+    func applyEdit(_ spec: CommandSpec, previous: CommandSpec) -> Bool {
+        guard save(spec) else { return false }
+        undoManager.registerUndo(withTarget: self) { model in
+            MainActor.assumeIsolated { model.applyEdit(previous, previous: spec) }
+        }
+        undoManager.setActionName("Edit “\(previous.name)”")
+        return true
+    }
+
     /// Adds a new command or updates an existing one. Never restarts on its own.
     /// Returns false when the change could not be written (the banner says why).
     @discardableResult

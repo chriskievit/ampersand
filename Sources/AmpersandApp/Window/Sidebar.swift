@@ -5,66 +5,71 @@ struct Sidebar: View {
     @Bindable var model: AppModel
     @State private var renamingGroup: String?
     @State private var groupName = ""
+    @State private var query = ""
 
     var body: some View {
         List(selection: $model.windowSelection) {
-            ForEach(model.sections) { section in
+            ForEach(visibleSections) { section in
                 Section {
                     ForEach(section.commands) { spec in
                         if let runtime = model.runtime(spec.id) {
-                            row(runtime)
-                                .tag(spec.id)
-                                .draggable(spec.id.uuidString)
-                                .dropDestination(for: String.self) { items, _ in
-                                    drop(items, before: spec.id, group: section.group?.id)
-                                }
+                            row(runtime).tag(spec.id)
                         }
+                    }
+                    .onMove { offsets, destination in
+                        move(in: section, from: offsets, to: destination)
                     }
                 } header: {
                     header(for: section)
-                        .dropDestination(for: String.self) { items, _ in
-                            drop(items, before: nil, group: section.group?.id)
-                        }
                 }
             }
         }
         .listStyle(.sidebar)
+        .searchable(text: $query, placement: .sidebar, prompt: "Search")
         .onDeleteCommand {
             if let id = model.windowSelection { model.delete(id) }
         }
-        .safeAreaInset(edge: .bottom) {
-            HStack {
-                Menu {
+        .toolbar {
+            ToolbarItem {
+                Menu("Add", systemImage: "plus") {
                     Button("New Command…") { model.requestNew() }
                     Button("Add from Project Folder…") { model.requestImport() }
-                } label: {
-                    Label("Add", systemImage: "plus")
+                    Divider()
+                    Button("New Group") {
+                        let group = model.addGroup(named: "")
+                        groupName = group.name
+                        renamingGroup = group.id
+                    }
                 }
-                .menuStyle(.borderlessButton)
-                .fixedSize()
-                Spacer()
-                Button("New Group") {
-                    let group = model.addGroup(named: "")
-                    groupName = group.name
-                    renamingGroup = group.id
-                }
-                .buttonStyle(.borderless)
             }
-            .padding(8)
+        }
+    }
+
+    /// Sections filtered by the search field (name or command line).
+    private var visibleSections: [ConfigSection] {
+        let q = query.trimmingCharacters(in: .whitespaces)
+        guard !q.isEmpty else { return model.sections }
+        return model.sections.compactMap { section in
+            var filtered = section
+            filtered.commands = section.commands.filter {
+                $0.name.localizedCaseInsensitiveContains(q) || $0.command.localizedCaseInsensitiveContains(q)
+            }
+            return filtered.commands.isEmpty ? nil : filtered
         }
     }
 
     private func row(_ runtime: CommandRuntime) -> some View {
-        HStack(spacing: 6) {
-            StatusGlyph(kind: runtime.status.kind, healthFailing: runtime.healthFailingSince != nil)
-            Text(runtime.spec.name)
-                .lineLimit(1)
-                .truncationMode(.middle)
-            Spacer()
+        LabeledContent {
             if let port = runtime.spec.port {
-                Text(verbatim: ":\(port)")
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
+                Text(verbatim: ":\(port)").monospacedDigit()
+            }
+        } label: {
+            Label {
+                Text(runtime.spec.name)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            } icon: {
+                StatusGlyph(kind: runtime.status.kind, healthFailing: runtime.healthFailingSince != nil)
             }
         }
         .help(runtime.spec.command)
@@ -105,12 +110,21 @@ struct Sidebar: View {
         }
     }
 
-    /// Dropping a row onto another row moves it before that row and into that row's group.
-    @discardableResult
-    private func drop(_ items: [String], before target: UUID?, group: String?) -> Bool {
-        guard let raw = items.first, let id = UUID(uuidString: raw), id != target else { return false }
-        if model.runtime(id)?.spec.group != group { model.move(id, toGroup: group) }
-        model.reorder(id, before: target)
-        return true
+    /// Native list reordering within a section; moving between groups is in the context menu.
+    private func move(in section: ConfigSection, from offsets: IndexSet, to destination: Int) {
+        guard let source = offsets.first else { return }
+        let ids = section.commands.map(\.id)
+        let id = ids[source]
+        if destination < ids.count {
+            if ids[destination] != id { model.reorder(id, before: ids[destination]) }
+        } else if let last = ids.last, last != id {
+            // Past the end of this group: place it right after the group's last command.
+            let all = model.config.commands.map(\.id)
+            if let lastIndex = all.firstIndex(of: last), lastIndex + 1 < all.count {
+                model.reorder(id, before: all[lastIndex + 1])
+            } else {
+                model.reorder(id, before: nil)
+            }
+        }
     }
 }
