@@ -1,0 +1,112 @@
+import AmpersandCore
+import AppKit
+import SwiftUI
+import UniformTypeIdentifiers
+
+/// The app's menus (spec 4.3). Command actions apply to the command selected in the window.
+struct AppCommands: Commands {
+    let model: AppModel
+
+    private var selected: CommandRuntime? { model.runtime(model.windowSelection) }
+
+    var body: some Commands {
+        CommandGroup(replacing: .newItem) {
+            Button("New Command") { model.requestNew() }
+                .keyboardShortcut("n")
+            Button("Add from Project Folder…") { model.requestImport() }
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+            Divider()
+            Button("Import…") { importConfig() }
+            Button("Export…") { exportConfig() }
+        }
+        CommandGroup(replacing: .undoRedo) {
+            Button("Undo") { undo() }
+                .keyboardShortcut("z")
+            Button("Redo") { redo() }
+                .keyboardShortcut("z", modifiers: [.command, .shift])
+        }
+        TextEditingCommands()
+        CommandMenu("Command") {
+            Button(selected?.status.isActive == true ? "Stop" : "Start") {
+                if let selected { model.toggle(selected.id) }
+            }
+            .keyboardShortcut(.return)
+            .disabled(selected == nil)
+            Button("Restart") {
+                if let selected { model.restart(selected.id) }
+            }
+            .keyboardShortcut("r")
+            .disabled(selected?.status.isActive != true)
+            Button("Start/Stop Group") {
+                if let selected { model.toggleGroup(selected.spec.group) }
+            }
+            .keyboardShortcut(.return, modifiers: [.command, .option])
+            .disabled(selected == nil)
+            Divider()
+            Button("Show Log") {
+                if let selected { model.showLog(selected.id) }
+            }
+            .keyboardShortcut("l")
+            .disabled(selected == nil)
+            Button("Open in Browser") {
+                if let selected { model.openInBrowser(selected.id) }
+            }
+            .keyboardShortcut("o")
+            .disabled(selected?.spec.port == nil)
+            Divider()
+            Button("Edit…") {
+                if let selected { model.requestEdit(selected.id) }
+            }
+            .keyboardShortcut("e")
+            .disabled(selected == nil)
+            Button("Duplicate") {
+                if let selected { model.duplicate(selected.id) }
+            }
+            .keyboardShortcut("d")
+            .disabled(selected == nil)
+            Button("Delete") {
+                if let selected { model.delete(selected.id) }
+            }
+            .keyboardShortcut(.delete)
+            .disabled(selected == nil)
+        }
+    }
+
+    /// Text fields keep their own undo; everything else undoes config edits.
+    private func undo() {
+        if isEditingText { NSApp.sendAction(Selector(("undo:")), to: nil, from: nil) }
+        else if model.undoManager.canUndo { model.undoManager.undo() }
+    }
+
+    private func redo() {
+        if isEditingText { NSApp.sendAction(Selector(("redo:")), to: nil, from: nil) }
+        else if model.undoManager.canRedo { model.undoManager.redo() }
+    }
+
+    private var isEditingText: Bool {
+        (NSApp.keyWindow?.firstResponder as? NSTextView)?.isEditable == true
+    }
+
+    private func exportConfig() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "Ampersand Commands.json"
+        panel.allowedContentTypes = [.json]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        model.exportConfig(to: url)
+    }
+
+    private func importConfig() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        if !model.config.commands.isEmpty {
+            let alert = NSAlert()
+            alert.messageText = "Replace your \(model.config.commands.count) commands?"
+            alert.informativeText = "Importing stops every running command and replaces your commands and groups with the ones in the file."
+            alert.addButton(withTitle: "Replace")
+            alert.addButton(withTitle: "Cancel")
+            guard alert.runModal() == .alertFirstButtonReturn else { return }
+        }
+        Task { await model.importConfig(from: url) }
+    }
+}

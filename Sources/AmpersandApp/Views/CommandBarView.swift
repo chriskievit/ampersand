@@ -171,6 +171,9 @@ struct CommandBarView: View {
             let index = Int(digit)! - 1
             guard index < visibleRuntimes.count else { return .ignored }
             model.popoverSelection = visibleRuntimes[index].id
+        case "z":
+            guard model.undoManager.canUndo else { return .ignored }
+            model.undoManager.undo()
         default:
             return .ignored
         }
