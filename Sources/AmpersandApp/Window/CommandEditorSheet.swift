@@ -73,7 +73,7 @@ struct CommandEditorSheet: View {
 
     private func save() {
         let spec = draft.makeSpec()
-        model.save(spec)
+        guard model.save(spec) else { return }   // the window's banner says why; keep the edits
         model.windowSelection = spec.id
         close()
     }

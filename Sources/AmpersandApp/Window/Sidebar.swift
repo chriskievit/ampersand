@@ -29,6 +29,9 @@ struct Sidebar: View {
             }
         }
         .listStyle(.sidebar)
+        .onDeleteCommand {
+            if let id = model.windowSelection { model.delete(id) }
+        }
         .safeAreaInset(edge: .bottom) {
             HStack {
                 Menu {

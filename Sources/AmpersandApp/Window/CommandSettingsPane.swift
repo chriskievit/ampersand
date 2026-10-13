@@ -33,8 +33,7 @@ struct CommandSettingsPane: View {
                     .disabled(!isDirty)
                 Button("Save") {
                     let spec = draft.makeSpec()
-                    model.save(spec)
-                    draft = CommandDraft(spec: spec)
+                    if model.save(spec) { draft = CommandDraft(spec: spec) }
                 }
                 .keyboardShortcut("s", modifiers: .command)
                 .disabled(!isDirty || !draft.isValid)

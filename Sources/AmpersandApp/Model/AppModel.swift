@@ -1,5 +1,6 @@
 import AmpersandCore
 import AppKit
+import UniformTypeIdentifiers
 import Observation
 
 struct Banner: Identifiable, Equatable {
@@ -183,6 +184,44 @@ final class AppModel {
         openMainWindow()
     }
 
+    /// The command's log without ANSI escapes, for copying and exporting.
+    func plainLog(_ id: UUID) -> String {
+        guard let runtime = runtimes[id] else { return "" }
+        return (runtime.lines + (runtime.partialLine.isEmpty ? [] : [runtime.partialLine]))
+            .map { line in
+                var parser = ANSIParser()
+                return parser.parse(line).map(\.text).joined()
+            }
+            .joined(separator: "\n")
+    }
+
+    func copyLog(_ id: UUID) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(plainLog(id), forType: .string)
+    }
+
+    func exportLog(_ id: UUID) {
+        guard let runtime = runtimes[id] else { return }
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "\(runtime.spec.name).log"
+        panel.allowedContentTypes = [.plainText]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do { try plainLog(id).write(to: url, atomically: true, encoding: .utf8) }
+        catch { show(Banner(message: "Couldn’t export the log: \(error.localizedDescription)"), autoDismiss: false) }
+    }
+
+    /// Moves a command one place up or down within its group (menu alternative to dragging).
+    func move(_ id: UUID, by offset: Int) {
+        guard let spec = runtimes[id]?.spec else { return }
+        let siblings = config.commands.filter { $0.group == spec.group }.map(\.id)
+        guard let index = siblings.firstIndex(of: id), siblings.indices.contains(index + offset) else { return }
+        if offset < 0 {
+            reorder(id, before: siblings[index - 1])
+        } else {
+            reorder(siblings[index + 1], before: id)
+        }
+    }
+
     func clearLog(_ id: UUID) {
         guard let runtime = runtimes[id] else { return }
         runtime.clearLog()
@@ -207,7 +246,9 @@ final class AppModel {
     }
 
     /// Adds a new command or updates an existing one. Never restarts on its own.
-    func save(_ spec: CommandSpec) {
+    /// Returns false when the change could not be written (the banner says why).
+    @discardableResult
+    func save(_ spec: CommandSpec) -> Bool {
         if let runtime = runtimes[spec.id] {
             let old = runtime.spec
             let launchChanged = old.command != spec.command || old.cwd != spec.cwd
@@ -220,7 +261,7 @@ final class AppModel {
             ConfigEditor.add(spec, to: &config)
             makeRuntime(spec)
         }
-        persist()
+        return persist()
     }
 
     func add(_ specs: [CommandSpec], newGroupNamed groupName: String?) {
@@ -291,7 +332,7 @@ final class AppModel {
 
     func exportConfig(to url: URL) {
         do { try store.export(config, to: url) }
-        catch { show(Banner(message: "Couldn’t export: \(error.localizedDescription)")) }
+        catch { show(Banner(message: "Couldn’t export: \(error.localizedDescription)"), autoDismiss: false) }
     }
 
     /// Replaces every command with the imported file's, stopping what runs now.
@@ -299,7 +340,7 @@ final class AppModel {
         let imported: AppConfig
         do { imported = try store.importConfig(from: url) }
         catch {
-            show(Banner(message: "Couldn’t import that file. It isn’t an Ampersand config."))
+            show(Banner(message: "Couldn’t import that file. It isn’t an Ampersand config."), autoDismiss: false)
             return
         }
         await stopAllProcesses()
@@ -334,15 +375,20 @@ final class AppModel {
         NSWorkspace.shared.activateFileViewerSelecting([store.fileURL])
     }
 
-    private func persist() {
+    @discardableResult
+    private func persist() -> Bool {
         guard !configIsReadOnly else {
-            show(Banner(message: "Changes can’t be saved while config.json is unreadable.", action: .revealConfig))
-            return
+            show(Banner(message: "Changes can’t be saved while config.json is unreadable.", action: .revealConfig),
+                 autoDismiss: false)
+            return false
         }
-        do { try store.save(config) }
-        catch {
+        do {
+            try store.save(config)
+            return true
+        } catch {
             show(Banner(message: "Couldn’t save your changes: \(error.localizedDescription)", action: .retrySave),
                  autoDismiss: false)
+            return false
         }
     }
 

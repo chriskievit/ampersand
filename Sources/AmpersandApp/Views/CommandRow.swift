@@ -64,7 +64,11 @@ struct CommandRow: View {
 
     @ViewBuilder
     private func trailing(now: Date) -> some View {
-        if let stamp = StatusText.stamp(for: runtime.status, now: now) {
+        if let owner = runtime.portConflict, let port = runtime.spec.port {
+            Text("port \(port) in use by \(owner.name)")
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        } else if let stamp = StatusText.stamp(for: runtime.status, now: now) {
             Text(stamp)
                 .foregroundStyle(.secondary)
                 .monospacedDigit()

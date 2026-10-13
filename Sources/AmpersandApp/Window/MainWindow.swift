@@ -18,6 +18,7 @@ struct MainWindow: View {
                                        description: Text("Select a command, or add one with ⌘N."))
             }
         }
+        .safeAreaInset(edge: .top, spacing: 0) { WindowNotices(model: model) }
         .frame(minWidth: 760, minHeight: 460)
         .sheet(item: $model.editorRequest) { request in
             switch request {
@@ -89,8 +90,8 @@ private struct CommandDetail: View {
             .toolbar {
                 ToolbarItemGroup {
                     Button("Clear", systemImage: "trash") { model.clearLog(runtime.id) }
-                    Button("Copy All", systemImage: "doc.on.doc") { copyAll() }
-                    Button("Export…", systemImage: "square.and.arrow.up") { export() }
+                    Button("Copy All", systemImage: "doc.on.doc") { model.copyLog(runtime.id) }
+                    Button("Export…", systemImage: "square.and.arrow.up") { model.exportLog(runtime.id) }
                 }
             }
     }
@@ -100,27 +101,38 @@ private struct CommandDetail: View {
         CommandSettingsPane(runtime: runtime, model: model)
             .id(runtime.id)
     }
+}
 
-    private var plainLog: String {
-        (runtime.lines + (runtime.partialLine.isEmpty ? [] : [runtime.partialLine]))
-            .map { line in
-                var parser = ANSIParser()
-                return parser.parse(line).map(\.text).joined()
+/// Feedback the window must show itself: banners (save, import and export errors) and a
+/// start blocked by a port conflict (audit P1: these were visible only in the popover).
+private struct WindowNotices: View {
+    let model: AppModel
+
+    var body: some View {
+        let conflict = model.runtime(model.windowSelection).flatMap { runtime in
+            runtime.portConflict.map { (runtime, $0) }
+        }
+        if model.banner != nil || conflict != nil {
+            VStack(spacing: 8) {
+                if let banner = model.banner {
+                    InlineBanner(banner: banner, model: model)
+                }
+                if let (runtime, owner) = conflict {
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.yellow)
+                        Text("Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
+                        Spacer(minLength: 4)
+                        Button("Start Anyway") { model.start(runtime.id, force: true) }
+                        Button("Kill pid \(owner.pid)") { model.killPortOwnerAndStart(runtime.id) }
+                    }
+                    .controlSize(.small)
+                    .padding(10)
+                    .background(.fill.tertiary, in: .rect(cornerRadius: 8, style: .continuous))
+                }
             }
-            .joined(separator: "\n")
-    }
-
-    private func copyAll() {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(plainLog, forType: .string)
-    }
-
-    private func export() {
-        let panel = NSSavePanel()
-        panel.nameFieldStringValue = "\(runtime.spec.name).log"
-        panel.allowedContentTypes = [.plainText]
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        do { try plainLog.write(to: url, atomically: true, encoding: .utf8) }
-        catch { model.show(Banner(message: "Couldn’t export the log: \(error.localizedDescription)")) }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+        }
     }
 }
