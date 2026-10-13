@@ -146,7 +146,10 @@ public actor Supervisor {
         status = .starting(since: now)
 
         Task {
-            for await chunk in newProcess.output { self.ingest(chunk, run: run) }
+            for await chunk in newProcess.output {
+                self.ingest(chunk, run: run)
+                newProcess.consumed(chunk.count)
+            }
         }
         Task {
             let exit = await newProcess.waitForExit()

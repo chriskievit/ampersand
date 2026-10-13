@@ -24,7 +24,7 @@ struct EnvEditor: View {
                 if !focused {
                     ForEach(errors, id: \.line) { error in
                         Label {
-                            Text("Line \(error.line): \(error.message)")
+                            Text(verbatim: "Line \(error.line): \(error.message)")
                         } icon: {
                             Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
                         }

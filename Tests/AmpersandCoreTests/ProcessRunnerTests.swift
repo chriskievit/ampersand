@@ -108,3 +108,19 @@ func waitUntil(timeout: Duration = .seconds(3), _ condition: @Sendable () async 
         #expect(LaunchConfiguration.supportedShell(nil) == "/bin/zsh")
     }
 }
+
+@Suite(.serialized) struct ProcessRunnerBackpressureTests {
+    @Test func unreadOutputStaysBounded() async throws {
+        let r = try testLaunch("yes 'GET /api/users 200 3ms'")
+        try await Task.sleep(for: .seconds(1))   // nobody consumes: the runner must stop reading
+        #expect(r.backlogBytes <= ProcessRunner.maxBacklogBytes + 1_048_576)
+        var received = 0
+        for await chunk in r.output {   // consuming resumes reading
+            received += chunk.count
+            r.consumed(chunk.count)
+            if received > ProcessRunner.maxBacklogBytes * 2 { break }
+        }
+        #expect(received > ProcessRunner.maxBacklogBytes * 2)
+        await r.terminate(grace: .seconds(1))
+    }
+}

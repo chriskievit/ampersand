@@ -19,10 +19,10 @@ struct ExpandedRow: View {
     private var notices: some View {
         if let owner = runtime.portConflict {
             VStack(alignment: .leading, spacing: 4) {
-                Text("Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
+                Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
                 HStack {
                     Button("Start Anyway") { model.start(runtime.id, force: true) }
-                    Button("Kill pid \(owner.pid)") { model.killPortOwnerAndStart(runtime.id) }
+                    Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
                 }
             }
         }

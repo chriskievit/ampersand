@@ -121,10 +121,10 @@ private struct WindowNotices: View {
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(.yellow)
-                        Text("Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
+                        Text(verbatim: "Port \(runtime.spec.port ?? 0) is in use by \(owner.name) (pid \(owner.pid)).")
                         Spacer(minLength: 4)
                         Button("Start Anyway") { model.start(runtime.id, force: true) }
-                        Button("Kill pid \(owner.pid)") { model.killPortOwnerAndStart(runtime.id) }
+                        Button(String("Kill pid \(owner.pid)")) { model.killPortOwnerAndStart(runtime.id) }
                     }
                     .controlSize(.small)
                     .padding(10)

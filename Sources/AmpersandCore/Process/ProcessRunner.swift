@@ -16,6 +16,8 @@ public protocol RunningProcess: AnyObject, Sendable {
     var pid: pid_t { get }
     var output: AsyncStream<[UInt8]> { get }
     var exitStatus: ProcessExit? { get }
+    /// The consumer reports bytes it has processed, so the producer can apply backpressure.
+    func consumed(_ byteCount: Int)
     func waitForExit() async -> ProcessExit
     @discardableResult func terminate(grace: Duration) async -> ProcessExit
 }
@@ -46,9 +48,15 @@ public final class ProcessRunner: RunningProcess {
         var exit: ProcessExit?
         var waiters: [CheckedContinuation<ProcessExit, Never>] = []
         var processSource: DispatchSourceProcess?
+        var readSource: DispatchSourceRead?
+        var readSuspended = false
     }
 
     private let state = Mutex(State())
+    /// Bytes yielded on `output` that the consumer has not reported as consumed.
+    private let backlog = Mutex(0)
+    public static let maxBacklogBytes = 4 << 20
+    public var backlogBytes: Int { backlog.withLock { $0 } }
     private let queue: DispatchQueue
 
     public static func launch(_ configuration: LaunchConfiguration) throws -> ProcessRunner {
@@ -70,7 +78,13 @@ public final class ProcessRunner: RunningProcess {
             // Drain everything available, then yield once: pty reads are often a single line.
             var buffer = [UInt8](repeating: 0, count: 16_384)
             var collected: [UInt8] = []
-            defer { if !collected.isEmpty { continuation.yield(collected) } }
+            defer {
+                if !collected.isEmpty {
+                    self.backlogAdd(collected.count)
+                    continuation.yield(collected)
+                    self.pauseReadingIfBackedUp()
+                }
+            }
             while collected.count < 1_048_576 {
                 let count = Darwin.read(master, &buffer, buffer.count)
                 if count > 0 {
@@ -89,7 +103,10 @@ public final class ProcessRunner: RunningProcess {
 
         let processSource = DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit, queue: queue)
         processSource.setEventHandler { [weak self] in self?.reap() }
-        state.withLock { $0.processSource = processSource }
+        state.withLock {
+            $0.processSource = processSource
+            $0.readSource = readSource
+        }
 
         readSource.resume()
         processSource.resume()
@@ -97,6 +114,36 @@ public final class ProcessRunner: RunningProcess {
     }
 
     public var exitStatus: ProcessExit? { state.withLock { $0.exit } }
+
+    public func consumed(_ byteCount: Int) {
+        let remaining = backlog.withLock { $0 -= byteCount; return $0 }
+        if remaining < Self.maxBacklogBytes / 2 { resumeReading() }
+    }
+
+    /// Like a terminal: when the consumer falls behind, stop reading so the child blocks on write
+    /// instead of Ampersand buffering without limit.
+    private func pauseReadingIfBackedUp() {
+        guard backlogBytes > Self.maxBacklogBytes else { return }
+        let source = state.withLock { s -> DispatchSourceRead? in
+            guard !s.readSuspended, let source = s.readSource else { return nil }
+            s.readSuspended = true
+            return source
+        }
+        source?.suspend()
+    }
+
+    private func resumeReading() {
+        let source = state.withLock { s -> DispatchSourceRead? in
+            guard s.readSuspended, let source = s.readSource else { return nil }
+            s.readSuspended = false
+            return source
+        }
+        source?.resume()
+    }
+
+    private func backlogAdd(_ byteCount: Int) {
+        backlog.withLock { $0 += byteCount }
+    }
 
     public func waitForExit() async -> ProcessExit {
         await withCheckedContinuation { continuation in
@@ -153,6 +200,7 @@ public final class ProcessRunner: RunningProcess {
             return pending
         }
         waiters.forEach { $0.resume(returning: exit) }
+        resumeReading()
 
         // The leader is gone: ask leftovers to stop, then force them.
         signalGroup(SIGTERM)
