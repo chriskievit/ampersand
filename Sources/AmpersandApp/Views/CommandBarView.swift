@@ -6,6 +6,7 @@ import SwiftUI
 struct CommandBarView: View {
     @Bindable var model: AppModel
     @State private var filter = ""
+    @State private var rowsHeight: CGFloat = 0
     @FocusState private var filterFocused: Bool
     @Environment(\.openSettings) private var openSettings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -88,11 +89,12 @@ struct CommandBarView: View {
             .frame(maxWidth: .infinity)
         } else {
             ScrollViewReader { proxy in
-                ViewThatFits(in: .vertical) {
-                    rows
-                    ScrollView { rows }
+                // A MenuBarExtra window sizes to its content's ideal height, and a ScrollView's ideal
+                // height is zero there, so size the scroll view to the measured rows (max 480 pt).
+                ScrollView {
+                    rows.onGeometryChange(for: CGFloat.self) { $0.size.height } action: { rowsHeight = $0 }
                 }
-                .frame(maxHeight: 480)
+                .frame(height: min(max(rowsHeight, 1), 480))
                 .onChange(of: model.popoverSelection) { _, id in
                     if let id { proxy.scrollTo(id) }
                 }
