@@ -5,3 +5,5 @@ DerivedData/
 *.xcuserstate
 .impeccable/config.local.json
 .impeccable/questions/
+build/
+.swiftpm/
