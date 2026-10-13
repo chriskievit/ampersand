@@ -117,7 +117,8 @@ struct CommandForm<Header: View, Footer: View>: View {
         } header: {
             Text(title)
         } footer: {
-            if let message = draft.validationMessage, !draft.commandText.isEmpty {
+            // Environment problems are shown in the Environment section itself.
+            if let message = draft.validationMessage, !draft.commandText.isEmpty, draft.envErrors.isEmpty {
                 Text(message).foregroundStyle(.secondary)
             } else if !draft.suggestions.isEmpty {
                 Text("Detected from the command. Remove anything you don’t want.")

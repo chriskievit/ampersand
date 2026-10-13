@@ -11,14 +11,17 @@ struct MainWindow: View {
             Sidebar(model: model)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 240)
         } detail: {
-            if let runtime = model.runtime(model.windowSelection) {
-                CommandDetail(runtime: runtime, model: model)
-            } else {
-                ContentUnavailableView("No Command Selected", systemImage: "terminal",
-                                       description: Text("Select a command, or add one with ⌘N."))
+            Group {
+                if let runtime = model.runtime(model.windowSelection) {
+                    CommandDetail(runtime: runtime, model: model)
+                } else {
+                    ContentUnavailableView("No Command Selected", systemImage: "terminal",
+                                           description: Text("Select a command, or add one with ⌘N."))
+                }
             }
+            // Notices belong to the detail pane, on the bar material, never over the sidebar.
+            .safeAreaInset(edge: .top, spacing: 0) { WindowNotices(model: model) }
         }
-        .safeAreaInset(edge: .top, spacing: 0) { WindowNotices(model: model) }
         .frame(minWidth: 760, minHeight: 460)
         .sheet(item: $model.editorRequest) { request in
             switch request {
@@ -156,6 +159,7 @@ private struct WindowNotices: View {
                 }
             }
             .padding()
+            .background(.bar)
         }
     }
 }
