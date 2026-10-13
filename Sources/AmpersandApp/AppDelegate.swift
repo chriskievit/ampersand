@@ -10,7 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Stops every running command before quitting (spec 5.4).
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard model.activeCount > 0 else {
+        guard model.needsGracefulQuit else {
             model.finishQuitting()
             return .terminateNow
         }

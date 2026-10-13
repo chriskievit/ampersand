@@ -137,3 +137,32 @@ func eventually(_ s: Supervisor, timeout: Duration = .seconds(3), _ kind: Comman
         await s.shutdown()
     }
 }
+
+@Suite(.serialized) struct SupervisorStoppingTests {
+    @Test func secondStopWaitsForTheGroupToDie() async throws {
+        let s = makeSupervisor("trap '' TERM; sleep 30")   // stopGrace 1 s, then SIGKILL
+        await s.start()
+        #expect(await eventually(s, .running))
+        let pid = try #require(await s.currentPID)
+        let first = Task { await s.stop() }
+        #expect(await eventually(s, .stopping))
+        await s.stop()   // e.g. Quit pressed while the first Stop is still waiting
+        #expect(!processGroupIsAlive(pid))
+        #expect(await s.status == .stopped)
+        await first.value
+    }
+
+    @Test func restartWhileStoppingStartsAgain() async throws {
+        let s = makeSupervisor("trap '' TERM; sleep 30")
+        await s.start()
+        #expect(await eventually(s, .running))
+        let old = try #require(await s.currentPID)
+        let first = Task { await s.stop() }
+        #expect(await eventually(s, .stopping))
+        await s.restart()
+        let new = try #require(await s.currentPID)
+        #expect(new != old)
+        await first.value
+        await s.shutdown()
+    }
+}

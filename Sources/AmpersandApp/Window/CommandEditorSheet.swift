@@ -36,7 +36,7 @@ struct CommandEditorSheet: View {
             Divider()
             HStack {
                 Button(session.isRunning ? "Stop Test" : "Run Once") {
-                    session.isRunning ? session.stop() : session.run(draft.makeSpec())
+                    session.isRunning ? session.stop() : session.run(draft.makeSpec(), model: model)
                 }
                 .disabled(!draft.isValid)
                 if let message = draft.validationMessage, !draft.commandText.isEmpty {
@@ -64,7 +64,7 @@ struct CommandEditorSheet: View {
         } message: {
             Text("Your changes haven’t been saved.")
         }
-        .onDisappear { session.stop() }
+        .onDisappear { session.close(model: model) }
     }
 
     private func cancel() {
@@ -79,7 +79,7 @@ struct CommandEditorSheet: View {
     }
 
     private func close() {
-        session.stop()
+        session.close(model: model)
         model.editorRequest = nil
         dismiss()
     }

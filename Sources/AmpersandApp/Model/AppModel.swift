@@ -31,6 +31,8 @@ final class AppModel {
     private(set) var config: AppConfig = .empty
     private(set) var runtimes: [UUID: CommandRuntime] = [:]
     private(set) var configIsReadOnly = false
+    /// Run Once processes from the editor: not in the config, but quit and crash cleanup must know them.
+    private(set) var transientRuntimes: [UUID: CommandRuntime] = [:]
     var banner: Banner?
     var popoverSelection: UUID?
     var windowSelection: UUID?
@@ -49,6 +51,8 @@ final class AppModel {
     @ObservationIgnored private var loops: [Task<Void, Never>] = []
     @ObservationIgnored private var screenLocked = false
     @ObservationIgnored private var bannerDismissTask: Task<Void, Never>?
+    /// Supervisors of deleted or replaced commands that are still shutting down.
+    @ObservationIgnored private var retiring: [UUID: Supervisor] = [:]
 
     init(directory: URL = ConfigStore.defaultDirectory()) {
         store = ConfigStore(directory: directory)
@@ -87,8 +91,15 @@ final class AppModel {
         reaper.clear()
     }
 
+    /// True while anything Ampersand started could still be alive, so quitting must wait.
+    var needsGracefulQuit: Bool {
+        activeCount > 0 || !retiring.isEmpty || transientRuntimes.values.contains { $0.status.isActive }
+    }
+
     private func stopAllProcesses() async {
         let supervisors = runtimes.values.map(\.supervisor)
+            + transientRuntimes.values.map(\.supervisor)
+            + Array(retiring.values)
         await withTaskGroup(of: Void.self) { group in
             for supervisor in supervisors { group.addTask { await supervisor.stop() } }
         }
@@ -227,7 +238,7 @@ final class AppModel {
         runtimes[id] = nil
         if popoverSelection == id { popoverSelection = nil }
         if windowSelection == id { windowSelection = nil }
-        Task { await runtime.supervisor.shutdown() }
+        retire(runtime.supervisor)
         persist()
         undoManager.registerUndo(withTarget: self) { model in
             MainActor.assumeIsolated { model.restore(deleted) }
@@ -292,7 +303,7 @@ final class AppModel {
             return
         }
         await stopAllProcesses()
-        runtimes.values.forEach { runtime in Task { await runtime.supervisor.shutdown() } }
+        runtimes.values.forEach { retire($0.supervisor) }
         runtimes = [:]
         popoverSelection = nil
         windowSelection = nil
@@ -337,6 +348,32 @@ final class AppModel {
 
     // MARK: - Supervisor events
 
+    /// Shuts a supervisor down while keeping it visible to quit until its processes are gone.
+    private func retire(_ supervisor: Supervisor) {
+        retiring[supervisor.id] = supervisor
+        Task {
+            await supervisor.shutdown()
+            retiring[supervisor.id] = nil
+        }
+    }
+
+    /// A Run Once process: tracked for quit and crash cleanup, never notified about, never saved.
+    func makeTransientRuntime(_ spec: CommandSpec) -> CommandRuntime {
+        let runtime = CommandRuntime(spec: spec, supervisor: Supervisor(spec: spec))
+        transientRuntimes[spec.id] = runtime
+        Task { [weak self] in
+            for await event in runtime.supervisor.events {
+                self?.handle(event, for: runtime, notify: false)
+            }
+        }
+        return runtime
+    }
+
+    func retireTransient(_ runtime: CommandRuntime) {
+        guard transientRuntimes.removeValue(forKey: runtime.id) != nil else { return }
+        retire(runtime.supervisor)
+    }
+
     private func makeRuntime(_ spec: CommandSpec) {
         let runtime = CommandRuntime(spec: spec, supervisor: Supervisor(spec: spec))
         runtimes[spec.id] = runtime
@@ -347,7 +384,7 @@ final class AppModel {
         }
     }
 
-    private func handle(_ event: SupervisorEvent, for runtime: CommandRuntime) {
+    private func handle(_ event: SupervisorEvent, for runtime: CommandRuntime, notify: Bool = true) {
         switch event {
         case .status(let status):
             let previous = runtime.status
@@ -368,7 +405,7 @@ final class AppModel {
                 runtime.healthFailingSince = nil
                 updateTrackedProcesses()
             }
-            notifications.notifyIfNeeded(command: runtime.spec, from: previous, to: status)
+            if notify { notifications.notifyIfNeeded(command: runtime.spec, from: previous, to: status) }
         case .output(let lines, let partial):
             runtime.receive(newLines: lines, partialLine: partial)
         case .logCleared:
@@ -377,7 +414,7 @@ final class AppModel {
     }
 
     private func updateTrackedProcesses() {
-        let tracked = runtimes.values.compactMap { runtime -> TrackedProcess? in
+        let tracked = (Array(runtimes.values) + Array(transientRuntimes.values)).compactMap { runtime -> TrackedProcess? in
             guard let pid = runtime.pid, let started = OrphanReaper.startTime(of: pid) else { return nil }
             return TrackedProcess(pgid: pid, startTime: started)
         }

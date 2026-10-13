@@ -5,33 +5,30 @@ import SwiftUI
 @MainActor @Observable
 final class RunOnceSession {
     private(set) var runtime: CommandRuntime?
-    @ObservationIgnored private var eventTask: Task<Void, Never>?
 
     var isRunning: Bool { runtime?.status.isActive ?? false }
 
-    func run(_ spec: CommandSpec) {
-        stop()
+    /// Runs through the model so quit and crash cleanup know about the process.
+    func run(_ spec: CommandSpec, model: AppModel) {
+        close(model: model)
         var once = spec
         once.id = UUID()
         once.restart = false
-        let supervisor = Supervisor(spec: once)
-        let runtime = CommandRuntime(spec: once, supervisor: supervisor)
+        let runtime = model.makeTransientRuntime(once)
         self.runtime = runtime
-        eventTask = Task {
-            for await event in supervisor.events {
-                switch event {
-                case .status(let status): runtime.status = status
-                case .output(let lines, let partial): runtime.receive(newLines: lines, partialLine: partial)
-                case .logCleared: break
-                }
-            }
-        }
-        Task { await supervisor.start() }
+        Task { await runtime.supervisor.start() }
     }
 
     func stop() {
         guard let runtime, runtime.status.isActive else { return }
         Task { await runtime.supervisor.stop() }
+    }
+
+    /// Stops the process (if any) and hands it to the model to finish shutting down.
+    func close(model: AppModel) {
+        guard let runtime else { return }
+        model.retireTransient(runtime)
+        self.runtime = nil
     }
 }
 

@@ -20,6 +20,8 @@ public actor Supervisor {
     private var startedAt: Date?
     private var stopRequested = false
     private var backoffTask: Task<Void, Never>?
+    /// The termination in flight, so a second stop (or quit) waits for the group to die.
+    private var stopTask: Task<Void, Never>?
 
     public private(set) var status: CommandStatus = .stopped {
         didSet { if status != oldValue { eventContinuation.yield(.status(status)) } }
@@ -70,17 +72,23 @@ public actor Supervisor {
         backoffTask?.cancel()
         backoffTask = nil
         switch status.kind {
-        case .stopped, .stopping:
+        case .stopped:
             return
+        case .stopping:
+            await stopTask?.value
         case .backoff, .exited, .gaveUp, .failed:
             status = .stopped
         case .starting, .running:
             guard let process else { status = .stopped; return }
             stopRequested = true
             status = .stopping
-            await process.terminate(grace: stopGrace)
-            if status.kind == .stopping { status = .stopped }
+            let grace = stopGrace
+            let task = Task { _ = await process.terminate(grace: grace) }
+            stopTask = task
+            await task.value
+            stopTask = nil
         }
+        if status.kind == .stopping { status = .stopped }
     }
 
     public func restart() async {
