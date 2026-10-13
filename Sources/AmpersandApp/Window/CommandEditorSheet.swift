@@ -9,10 +9,12 @@ struct CommandEditorSheet: View {
     @State private var confirmingDiscard = false
     @Environment(\.dismiss) private var dismiss
 
-    init(model: AppModel, original: CommandSpec?) {
+    init(model: AppModel, original: CommandSpec?, prefill: String = "") {
         self.model = model
         self.original = original
-        _draft = State(initialValue: original.map(CommandDraft.init(spec:)) ?? CommandDraft(restartDefault: AppDefaults.restartOnCrash))
+        var draft = original.map(CommandDraft.init(spec:)) ?? CommandDraft(restartDefault: AppDefaults.restartOnCrash)
+        if original == nil { draft.commandText = prefill }
+        _draft = State(initialValue: draft)
     }
 
     private var title: String { original.map { "Edit “\($0.name)”" } ?? "New command" }

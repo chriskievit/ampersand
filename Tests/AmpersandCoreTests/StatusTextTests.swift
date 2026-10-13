@@ -54,3 +54,12 @@ private let fixedTime: @Sendable (Date) -> String = { _ in "14:02" }
     #expect(StatusText.stamp(for: .finished(at: t0), now: t0, time: fixedTime) == "exit 0 · 14:02")
     #expect(StatusText.stateWord(.finished) == "finished")
 }
+
+@Test func rowMetricsShowOnlyWhatIsNotable() {
+    let gib: UInt64 = 1_073_741_824
+    #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 0.3, residentBytes: 84 * 1_048_576)).isEmpty)
+    #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 49.9, residentBytes: gib - 1)).isEmpty)
+    #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 50, residentBytes: 10)) == ["50%"])
+    #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 1, residentBytes: gib)) == ["1.0 GB"])
+    #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 120, residentBytes: 2 * gib)) == ["120%", "2.0 GB"])
+}

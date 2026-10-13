@@ -7,6 +7,7 @@ struct CommandBarView: View {
     @Bindable var model: AppModel
     @State private var filter = ""
     @State private var rowsHeight: CGFloat = 0
+    @State private var commandHeld = false
     @FocusState private var filterFocused: Bool
     @Environment(\.openSettings) private var openSettings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -36,8 +37,12 @@ struct CommandBarView: View {
                 filter = ""
                 filterFocused = true
                 selectInitialRow()
+            } else {
+                commandHeld = false
             }
         })
+        // Holding ⌘ labels the first nine rows %1…%9, the rows ⌘1–9 select.
+        .onModifierKeysChanged(mask: .command) { _, keys in commandHeld = keys.contains(.command) }
         .onChange(of: filter) { _, query in
             // Typing narrows the list; keep a match selected so Return acts on it.
             if !query.isEmpty { model.popoverSelection = visibleRuntimes.first?.id }
@@ -62,9 +67,18 @@ struct CommandBarView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(.secondary)
-            TextField("Filter commands", text: $filter)
+            // The & takes over when the text no longer matches a command: it will be added as one.
+            ZStack {
+                Image(systemName: "magnifyingglass")
+                    .opacity(isPrompt ? 0 : 1)
+                Text(verbatim: "&")
+                    .fontWeight(.semibold)
+                    .opacity(isPrompt ? 1 : 0)
+            }
+            .foregroundStyle(.secondary)
+            .frame(width: 16)
+            .accessibilityHidden(true)
+            TextField("Filter or add a command", text: $filter)
                 .textFieldStyle(.plain)
                 // A filter needs no system suggestions; their (empty) panel covered the list.
                 .autocorrectionDisabled()
@@ -105,14 +119,9 @@ struct CommandBarView: View {
     private var content: some View {
         if model.config.commands.isEmpty {
             EmptyStateView(model: model)
-        } else if visibleRuntimes.isEmpty {
-            VStack(spacing: 8) {
-                Text("No commands match “\(filter)”")
-                    .foregroundStyle(.secondary)
-                Button("Clear") { filter = "" }
-            }
-            .padding(24)
-            .frame(maxWidth: .infinity)
+        } else if isPrompt {
+            PromptRow(spec: promptSpec, add: addFromPrompt, edit: editFromPrompt)
+                .padding(8)
         } else {
             ScrollViewReader { proxy in
                 // A MenuBarExtra window sizes to its content's ideal height, and a ScrollView's ideal
@@ -143,7 +152,8 @@ struct CommandBarView: View {
                         .accessibilityAddTraits(.isHeader)
                 }
                 ForEach(entry.runtimes) { runtime in
-                    CommandRow(runtime: runtime, model: model, isSelected: runtime.id == model.popoverSelection)
+                    CommandRow(runtime: runtime, model: model, isSelected: runtime.id == model.popoverSelection,
+                               jobNumber: commandHeld ? jobNumbers[runtime.id] : nil)
                         .id(runtime.id)
                 }
             }
@@ -151,23 +161,45 @@ struct CommandBarView: View {
         .padding(8)
     }
 
+    /// The rows ⌘1–9 select, in display order.
+    private var jobNumbers: [UUID: Int] {
+        Dictionary(uniqueKeysWithValues: visibleRuntimes.prefix(9).enumerated().map { ($1.id, $0 + 1) })
+    }
+
+    // MARK: Prompt
+
+    /// Typed text that matches no command is offered as a new one.
+    private var isPrompt: Bool {
+        !filter.trimmingCharacters(in: .whitespaces).isEmpty && visibleRuntimes.isEmpty
+    }
+
+    /// The command the typed text would save as, with the editor's suggestions applied.
+    private var promptSpec: CommandSpec {
+        var draft = CommandDraft(restartDefault: AppDefaults.restartOnCrash)
+        draft.commandText = filter
+        return draft.makeSpec()
+    }
+
+    private func addFromPrompt() {
+        let spec = promptSpec
+        guard model.save(spec) else { return }   // the banner says why; keep the text
+        filter = ""
+        model.start(spec.id)
+        model.popoverSelection = spec.id
+    }
+
+    private func editFromPrompt() {
+        model.requestNew(prefill: filter)
+    }
+
     // MARK: Footer
 
     private var footer: some View {
         HStack(spacing: 16) {
-            Menu {
-                Button("Add command…") { model.requestNew() }
-                Button("Add from project folder…") { model.requestImport() }
-            } label: {
-                Label("Add", systemImage: "plus")
-            }
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            .fixedSize()
-            Spacer()
             Button("Open Ampersand") { model.openMainWindow() }
                 .buttonStyle(.borderless)
                 .lineLimit(1)
+            Spacer()
             // The longest label that fits: "Quit and stop 3 processes" → "Quit and stop 3" → "Quit".
             ViewThatFits(in: .horizontal) {
                 ForEach(quitTitles, id: \.self) { title in
@@ -179,7 +211,7 @@ struct CommandBarView: View {
                 }
             }
         }
-        .foregroundStyle(.primary)   // one treatment for all three footer controls
+        .foregroundStyle(.primary)   // one treatment for both footer controls
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
     }
@@ -196,6 +228,10 @@ struct CommandBarView: View {
         let selected = model.popoverSelection.flatMap { id in visibleRuntimes.first { $0.id == id } }
         if press.key == .upArrow { moveSelection(-1); return .handled }
         if press.key == .downArrow { moveSelection(1); return .handled }
+        if press.key == .return, isPrompt {
+            if press.modifiers.contains(.option) { editFromPrompt() } else { addFromPrompt() }
+            return .handled
+        }
         if press.key == .return {
             guard let selected else { return .ignored }
             if press.modifiers.contains(.option) { model.toggleGroup(selected.spec.group) } else { model.toggle(selected.id) }

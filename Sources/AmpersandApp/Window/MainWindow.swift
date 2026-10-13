@@ -25,7 +25,7 @@ struct MainWindow: View {
         .frame(minWidth: 760, minHeight: 460)
         .sheet(item: $model.editorRequest) { request in
             switch request {
-            case .new: CommandEditorSheet(model: model, original: nil)
+            case .new(let prefill): CommandEditorSheet(model: model, original: nil, prefill: prefill)
             case .edit(let id): CommandEditorSheet(model: model, original: model.runtime(id)?.spec)
             case .importProject: ProjectImportSheet(model: model)
             }

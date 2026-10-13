@@ -24,7 +24,7 @@ it started stops with it.
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/popover-dark.png">
-    <img src="docs/screenshots/popover-light.png" width="380" alt="The Ampersand menu bar popover: a Storefront group with api, web, worker and storybook, plus ungrouped commands. Each row has a status glyph, port, CPU, memory and uptime. One crashed command is expanded with its last log lines and a Start again button.">
+    <img src="docs/screenshots/popover-light.png" width="380" alt="The Ampersand menu bar popover: a Storefront group with api, web, worker and storybook, plus ungrouped commands. Each row has a status glyph, port and uptime. The crashed migrate command is selected and expanded with its last log lines and a Start button.">
   </picture>
 </p>
 
@@ -47,8 +47,10 @@ purpose: commands and one level of groups, without tags, dashboards or plugins.
 ### At a glance
 
 - One row per command with a status glyph (running, starting, crashed,
-  stopped, finished), its port, CPU, memory and uptime.
-- The selected row expands to show the last lines of its log.
+  stopped, finished), its port and its uptime. CPU and memory show on the row
+  only when they are high (from 50 % CPU or 1 GB).
+- The selected row expands to show its CPU, memory and the last lines of its
+  log.
 - The menu bar icon changes when something needs you.
 - Filter as you type. Groups keep related commands together, and you can
   start or stop a whole group at once.
@@ -67,7 +69,16 @@ purpose: commands and one level of groups, without tags, dashboards or plugins.
 
 ### Fast to set up
 
-- Paste a command line and Ampersand suggests a name, a port and a health
+- Type or paste a command into the popover's filter field. When it matches
+  nothing, <kbd>↩</kbd> adds it and starts it; <kbd>⌥↩</kbd> opens it in the
+  editor first.
+
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/prompt-dark.png">
+    <img src="docs/screenshots/prompt-light.png" width="380" alt="The popover filter field holds PORT=5173 npm run preview. The search icon has become an ampersand, and a highlighted row offers npm run preview: No match. Adds “preview” on port 5173, with Add and start and Edit first… buttons.">
+  </picture>
+
+- Paste a command line into the editor and Ampersand suggests a name, a port and a health
   check. A `kubectl port-forward svc/api 8080:80` becomes `api` on port 8080
   with a TCP check.
 - **Add from project folder** reads `package.json` scripts and proposes
@@ -138,9 +149,9 @@ In the menu bar popover:
 | Keys | Action |
 | --- | --- |
 | <kbd>↑</kbd> <kbd>↓</kbd> | Select a command |
-| <kbd>⌘1</kbd>…<kbd>⌘9</kbd> | Jump to a command |
-| <kbd>↩</kbd> | Start or stop the selected command |
-| <kbd>⌥↩</kbd> | Start or stop its group |
+| <kbd>⌘1</kbd>…<kbd>⌘9</kbd> | Jump to a command (hold <kbd>⌘</kbd> to see the numbers) |
+| <kbd>↩</kbd> | Start or stop the selected command, or add the typed command |
+| <kbd>⌥↩</kbd> | Start or stop its group, or edit the typed command first |
 | <kbd>⌘R</kbd> | Restart |
 | <kbd>⌘L</kbd> | Show the full log |
 | <kbd>⌘O</kbd> | Open its port in the browser |
