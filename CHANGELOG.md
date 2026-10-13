@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/chriskievit/ampersand/compare/v1.1.1...v1.2.0) (2026-10-13)
+
+
+### Features
+
+* **popover:** add commands from the filter field and quiet the rows ([#6](https://github.com/chriskievit/ampersand/issues/6)) ([9c2a638](https://github.com/chriskievit/ampersand/commit/9c2a638c203c16b83cca10df1f0d58e82d1305f2))
+
 ## [1.1.1](https://github.com/chriskievit/ampersand/compare/v1.1.0...v1.1.1) (2026-10-13)
 
 
