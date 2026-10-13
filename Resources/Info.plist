@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleExecutable</key><string>Ampersand</string>
+    <key>CFBundleIconFile</key><string>Ampersand</string>
+    <key>CFBundleIconName</key><string>Ampersand</string>
     <key>CFBundleIdentifier</key><string>nl.chriskievit.ampersand</string>
     <key>CFBundleName</key><string>Ampersand</string>
     <key>CFBundleDisplayName</key><string>Ampersand</string>

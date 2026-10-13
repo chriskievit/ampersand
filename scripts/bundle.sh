@@ -10,5 +10,9 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/Ampersand"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
+# App icon: compile the Icon Composer document (Liquid Glass + legacy .icns fallback).
+xcrun actool Resources/Ampersand.icon --compile "$APP/Contents/Resources" \
+    --platform macosx --minimum-deployment-target 26.0 --app-icon Ampersand \
+    --output-partial-info-plist /dev/null >/dev/null
 codesign --force --sign - "$APP"
 echo "$APP"
