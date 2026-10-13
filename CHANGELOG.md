@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/chriskievit/ampersand/compare/v1.0.0...v1.1.0) (2026-10-13)
+
+
+### Features
+
+* **release:** ship a drag-to-install DMG ([#2](https://github.com/chriskievit/ampersand/issues/2)) ([62ec765](https://github.com/chriskievit/ampersand/commit/62ec7651a22aae349967a4e211e7c3a40161b27b)), closes [#1](https://github.com/chriskievit/ampersand/issues/1)
+
 # 1.0.0 (2026-10-13)
 
 
