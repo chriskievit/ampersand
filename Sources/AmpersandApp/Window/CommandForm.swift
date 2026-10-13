@@ -38,7 +38,7 @@ struct CommandForm<Header: View, Footer: View>: View {
             Section("Location") {
                 LabeledContent("Working Directory") {
                     HStack {
-                        TextField("Working Directory", text: $draft.cwd, prompt: Text(verbatim: "~/dev/project"))
+                        TextField("Working Directory", text: $draft.cwd, prompt: Text("Not set"))
                             .labelsHidden()
                         Button("Choose…") { chooseFolder() }
                     }

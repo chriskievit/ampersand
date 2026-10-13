@@ -7,7 +7,7 @@ struct InlineBanner: View {
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: "info.circle")
+            Image(systemName: banner.action == nil ? "info.circle" : "exclamationmark.triangle")
                 .foregroundStyle(.secondary)
             Text(banner.message)
                 .fixedSize(horizontal: false, vertical: true)

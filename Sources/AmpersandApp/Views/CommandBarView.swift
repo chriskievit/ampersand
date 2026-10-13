@@ -167,6 +167,7 @@ struct CommandBarView: View {
             ViewThatFits(in: .horizontal) {
                 ForEach(quitTitles, id: \.self) { title in
                     Button(title) { NSApp.terminate(nil) }
+                        .help(quitTitles[0])
                         .buttonStyle(.borderless)
                         .lineLimit(1)
                         .fixedSize()

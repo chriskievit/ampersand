@@ -67,13 +67,15 @@ private struct CommandDetail: View {
                        systemImage: runtime.status.isActive ? "stop.fill" : "play.fill") { model.toggle(runtime.id) }
                 Button("Restart", systemImage: "arrow.clockwise") { model.restart(runtime.id) }
                     .disabled(!runtime.status.isActive)
-                Menu("More", systemImage: "ellipsis.circle") {
+                Menu {
                     Button("Open in Browser") { model.openInBrowser(runtime.id) }
                         .disabled(runtime.spec.port == nil)
                     Divider()
                     Button("Clear Log") { model.clearLog(runtime.id) }
                     Button("Copy Log") { model.copyLog(runtime.id) }
                     Button("Export Log…") { model.exportLog(runtime.id) }
+                } label: {
+                    Label { Text(verbatim: "More") } icon: { Image(systemName: "ellipsis.circle") }
                 }
             }
         }
@@ -132,7 +134,7 @@ private struct WindowNotices: View {
                                 Button("Dismiss") { model.banner = nil }
                             }
                         } label: {
-                            Label(banner.message, systemImage: "info.circle")
+                            Label(banner.message, systemImage: banner.action == nil ? "info.circle" : "exclamationmark.triangle")
                         }
                     }
                 }

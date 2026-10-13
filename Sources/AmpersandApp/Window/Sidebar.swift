@@ -31,7 +31,7 @@ struct Sidebar: View {
         }
         .toolbar {
             ToolbarItem {
-                Menu("Add", systemImage: "plus") {
+                Menu {
                     Button("New Command…") { model.requestNew() }
                     Button("Add from Project Folder…") { model.requestImport() }
                     Divider()
@@ -40,6 +40,9 @@ struct Sidebar: View {
                         groupName = group.name
                         renamingGroup = group.id
                     }
+                } label: {
+                    // Verbatim: SwiftUI would otherwise pick up the system's translation of "Add".
+                    Label { Text(verbatim: "Add") } icon: { Image(systemName: "plus") }
                 }
             }
         }
