@@ -44,7 +44,7 @@ It differs from a terminal multiplexer by being a resident, glanceable control s
 - Lifecycle: quitting Ampersand stops every process it started. No orphaned processes.
 - Monitoring: running/stopped/crashed status, live stdout/stderr log per command, auto-restart on unexpected exit (with backoff), macOS notification on unexpected exit, and health/resource info (uptime, CPU/memory, optional port or URL check).
 - Ampersand can launch at login.
-- Single user, local only. No sync, no accounts, no distribution beyond the author's own Mac.
+- Single user, local only. No sync, no accounts. Distributed as an unsigned, open-source build.
 
 ## Brand Commitments
 

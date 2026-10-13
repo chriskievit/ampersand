@@ -1,0 +1,92 @@
+{
+  "commands": [
+    {
+      "autoStart": true,
+      "command": "while :; do echo \"$(date +%T) Handling connection for 8080\"; sleep 2; done",
+      "env": "PORT=8080\nLOG_LEVEL=debug\nGREETING=\"hello world\"",
+      "group": "storefront",
+      "id": "11111111-1111-1111-1111-111111111111",
+      "name": "api",
+      "port": 8080,
+      "restart": true
+    },
+    {
+      "autoStart": true,
+      "command": "printf '\\e[32m  VITE v6.0.1\\e[0m  ready in \\e[1m412\\e[0m ms\\n\\n  \u279c  Local:   \\e[36mhttp://localhost:3000/\\e[0m\\n'; python3 -m http.server 3000 2>&1",
+      "env": "",
+      "group": "storefront",
+      "health": {
+        "type": "http",
+        "url": "http://localhost:3999/health"
+      },
+      "id": "55555555-5555-5555-5555-555555555555",
+      "name": "web",
+      "port": 3000,
+      "restart": true
+    },
+    {
+      "autoStart": true,
+      "command": "echo 'Error: Cannot find module ./queue'; sleep 3; exit 1",
+      "env": "",
+      "group": "storefront",
+      "id": "66666666-6666-6666-6666-666666666666",
+      "name": "worker",
+      "restart": true
+    },
+    {
+      "id": "44444444-4444-4444-4444-444444444444",
+      "name": "storybook",
+      "command": "npm run storybook -- --port 6006",
+      "cwd": "~/dev/storefront",
+      "env": "NODE_ENV=development\nSTORYBOOK_THEME=dark",
+      "group": "storefront",
+      "port": 6006,
+      "health": {
+        "type": "http",
+        "url": "http://localhost:6006"
+      },
+      "autoStart": false,
+      "restart": true
+    },
+    {
+      "autoStart": true,
+      "command": "echo 'Running migrations\u2026'; echo '  001_create_users ok'; echo '  002_add_index ok'; echo '  003_backfill_names ok'; echo 'Error: connect ECONNREFUSED 127.0.0.1:5432'; exit 1",
+      "env": "",
+      "id": "22222222-2222-2222-2222-222222222222",
+      "name": "migrate",
+      "restart": false
+    },
+    {
+      "autoStart": false,
+      "command": "caffeinate -dimsu",
+      "env": "",
+      "id": "33333333-3333-3333-3333-333333333333",
+      "name": "caffeinate",
+      "restart": true
+    },
+    {
+      "id": "6a065c34-2f0a-4d7a-b0ec-dc16c0de8c51",
+      "name": "once",
+      "command": "echo 'Backup complete: 214 files'; exit 0",
+      "env": "",
+      "autoStart": true,
+      "restart": true
+    },
+    {
+      "id": "7a4dd76a-83f3-4580-8e0e-48a38541ac98",
+      "name": "docs",
+      "command": "python3 -m http.server 4000",
+      "env": "",
+      "autoStart": false,
+      "restart": true,
+      "port": 4000
+    }
+  ],
+  "groups": [
+    {
+      "id": "storefront",
+      "name": "Storefront"
+    }
+  ],
+  "version": 1
+}
