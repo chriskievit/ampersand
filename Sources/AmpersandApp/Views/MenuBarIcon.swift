@@ -27,10 +27,17 @@ enum MenuBarIcon {
 
 struct MenuBarLabel: View {
     let model: AppModel
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Image(nsImage: MenuBarIcon.image(active: model.activeCount > 0, attention: model.attentionCount > 0))
             .accessibilityLabel(accessibilityText)
+            .onAppear {
+                model.openMainWindow = {
+                    openWindow(id: "main")
+                    NSApp.activate()
+                }
+            }
     }
 
     private var accessibilityText: String {

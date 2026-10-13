@@ -7,7 +7,6 @@ struct CommandBarView: View {
     @Bindable var model: AppModel
     @State private var filter = ""
     @FocusState private var filterFocused: Bool
-    @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -34,12 +33,6 @@ struct CommandBarView: View {
                 filterFocused = true
             }
         })
-        .onAppear {
-            model.openMainWindow = {
-                openWindow(id: "main")
-                NSApp.activate()
-            }
-        }
     }
 
     // MARK: Header

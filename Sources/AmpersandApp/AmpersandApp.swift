@@ -11,5 +11,10 @@ struct AmpersandApp: App {
             MenuBarLabel(model: appDelegate.model)
         }
         .menuBarExtraStyle(.window)
+        Window("Ampersand", id: "main") {
+            MainWindow(model: appDelegate.model)
+        }
+        .defaultSize(width: 900, height: 600)
+        .windowToolbarStyle(.unified)
     }
 }
