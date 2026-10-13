@@ -378,8 +378,8 @@ final class AppModel {
 
     private func updateTrackedProcesses() {
         let tracked = runtimes.values.compactMap { runtime -> TrackedProcess? in
-            guard let pid = runtime.pid, let line = OrphanReaper.commandLine(of: pid) else { return nil }
-            return TrackedProcess(pgid: pid, commandLine: line)
+            guard let pid = runtime.pid, let started = OrphanReaper.startTime(of: pid) else { return nil }
+            return TrackedProcess(pgid: pid, startTime: started)
         }
         if tracked.isEmpty { reaper.clear() } else { try? reaper.record(tracked) }
     }

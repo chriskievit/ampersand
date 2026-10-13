@@ -1,10 +1,13 @@
 import Darwin
 import Foundation
 
+/// A process group Ampersand started, identified by its leader's start time.
+/// The start time survives `exec` (zsh replaces itself with the last command) and
+/// defeats pid reuse, unlike the leader's argv.
 public struct TrackedProcess: Codable, Sendable, Equatable {
     public var pgid: Int32
-    public var commandLine: String
-    public init(pgid: Int32, commandLine: String) { self.pgid = pgid; self.commandLine = commandLine }
+    public var startTime: UInt64   // microseconds since the epoch
+    public init(pgid: Int32, startTime: UInt64) { self.pgid = pgid; self.startTime = startTime }
 }
 
 /// Remembers the process groups Ampersand started so a crashed session can be cleaned up.
@@ -28,7 +31,7 @@ public final class OrphanReaper: Sendable {
         guard let data = try? Data(contentsOf: fileURL),
               let tracked = try? JSONDecoder().decode([TrackedProcess].self, from: data) else { return 0 }
         let matching = tracked.filter {
-            processGroupIsAlive($0.pgid) && Self.commandLine(of: $0.pgid) == $0.commandLine
+            processGroupIsAlive($0.pgid) && Self.startTime(of: $0.pgid) == $0.startTime
         }
         guard !matching.isEmpty else { return 0 }
         matching.forEach { _ = kill(-$0.pgid, SIGTERM) }
@@ -37,29 +40,11 @@ public final class OrphanReaper: Sendable {
         return matching.count
     }
 
-    /// The process's argv joined by spaces, read with sysctl(KERN_PROCARGS2).
-    public static func commandLine(of pid: pid_t) -> String? {
-        var argmax: Int32 = 0
-        var size = MemoryLayout<Int32>.size
-        var argmaxMIB: [Int32] = [CTL_KERN, KERN_ARGMAX]
-        guard sysctl(&argmaxMIB, 2, &argmax, &size, nil, 0) == 0, argmax > 0 else { return nil }
-
-        var buffer = [UInt8](repeating: 0, count: Int(argmax))
-        size = buffer.count
-        var mib: [Int32] = [CTL_KERN, KERN_PROCARGS2, pid]
-        guard sysctl(&mib, 3, &buffer, &size, nil, 0) == 0, size > MemoryLayout<Int32>.size else { return nil }
-
-        let argc = buffer.withUnsafeBytes { $0.load(as: Int32.self) }
-        var index = MemoryLayout<Int32>.size
-        while index < size, buffer[index] != 0 { index += 1 }   // executable path
-        while index < size, buffer[index] == 0 { index += 1 }   // padding
-        var arguments: [String] = []
-        while arguments.count < argc, index < size {
-            let start = index
-            while index < size, buffer[index] != 0 { index += 1 }
-            arguments.append(String(decoding: buffer[start..<index], as: UTF8.self))
-            index += 1
-        }
-        return arguments.isEmpty ? nil : arguments.joined(separator: " ")
+    /// The process's start time in microseconds since the epoch, or nil if it is gone.
+    public static func startTime(of pid: pid_t) -> UInt64? {
+        var info = proc_bsdinfo()
+        let size = Int32(MemoryLayout<proc_bsdinfo>.size)
+        guard proc_pidinfo(pid, PROC_PIDTBSDINFO, 0, &info, size) == size else { return nil }
+        return UInt64(info.pbi_start_tvsec) * 1_000_000 + UInt64(info.pbi_start_tvusec)
     }
 }
