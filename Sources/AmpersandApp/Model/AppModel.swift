@@ -13,7 +13,7 @@ struct Banner: Identifiable, Equatable {
 }
 
 enum EditorRequest: Identifiable, Equatable {
-    case new
+    case new(prefill: String = "")
     case edit(UUID)
     case importProject
 
@@ -242,7 +242,7 @@ final class AppModel {
 
     // MARK: - Editing intents
 
-    func requestNew() { editorRequest = .new; openMainWindow() }
+    func requestNew(prefill: String = "") { editorRequest = .new(prefill: prefill); openMainWindow() }
     func requestImport() { editorRequest = .importProject; openMainWindow() }
 
     func requestEdit(_ id: UUID) {

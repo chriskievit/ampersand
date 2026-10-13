@@ -5,6 +5,8 @@ struct CommandRow: View {
     let runtime: CommandRuntime
     let model: AppModel
     let isSelected: Bool
+    /// `%1`…`%9` while ⌘ is held: the shell's job spec, naming the ⌘1–9 shortcut for this row.
+    var jobNumber: Int? = nil
 
     @State private var hovering = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -13,6 +15,16 @@ struct CommandRow: View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
                 StatusGlyph(kind: runtime.status.kind, healthFailing: runtime.healthFailingSince != nil)
+                    .opacity(jobNumber == nil ? 1 : 0)
+                    .overlay {
+                        if let jobNumber {
+                            Text(verbatim: "%\(jobNumber)")
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                                .fixedSize()
+                                .accessibilityHidden(true)
+                        }
+                    }
                 Text(runtime.spec.name)
                     .fontWeight(.medium)
                     .lineLimit(1)
@@ -43,7 +55,10 @@ struct CommandRow: View {
             .padding(.vertical, 6)
             .background {
                 if isSelected {
-                    RoundedRectangle(cornerRadius: 6, style: .continuous).fill(.selection)
+                    // The popover is the key window while open, so the HIG pairs the emphasized
+                    // (accent) background with white text. `.selection` drew the non-key grey here.
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .fill(Color(nsColor: .selectedContentBackgroundColor))
                 }
             }
             .environment(\.backgroundProminence, isSelected ? .increased : .standard)
@@ -78,10 +93,10 @@ struct CommandRow: View {
                 .monospacedDigit()
                 .lineLimit(1)
         } else if let since = runtime.status.since {
+            // Quiet when healthy: uptime only, plus CPU or memory once they are worth a look.
             HStack(spacing: 10) {
                 if let sample = runtime.sample {
-                    Text(StatusText.cpu(sample.cpuPercent))
-                    Text(StatusText.memory(sample.residentBytes))
+                    ForEach(StatusText.notableMetrics(sample), id: \.self) { Text($0) }
                 }
                 Text(StatusText.uptime(now.timeIntervalSince(since)))
             }

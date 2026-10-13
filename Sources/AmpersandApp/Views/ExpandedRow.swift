@@ -9,6 +9,7 @@ struct ExpandedRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             notices
+            metrics
             logTail
             actions
         }
@@ -45,6 +46,16 @@ struct ExpandedRow: View {
                 Text("Health check failing for \(StatusText.uptime(context.date.timeIntervalSince(since))): \(reason)")
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    /// The full numbers the collapsed row leaves out.
+    @ViewBuilder
+    private var metrics: some View {
+        if runtime.status.kind == .running, let sample = runtime.sample {
+            Text(verbatim: "\(StatusText.cpu(sample.cpuPercent)) CPU · \(StatusText.memory(sample.residentBytes)) memory")
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
         }
     }
 

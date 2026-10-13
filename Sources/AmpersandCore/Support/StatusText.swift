@@ -57,6 +57,15 @@ public enum StatusText {
         percent < 10 ? String(format: "%.1f%%", percent) : "\(Int(percent.rounded()))%"
     }
 
+    /// The metrics a popover row shows unasked: only CPU from 50 % and memory from 1 GB.
+    /// Quiet values stay in the expanded row, so a healthy command says nothing extra.
+    public static func notableMetrics(_ sample: ResourceSample) -> [String] {
+        var out: [String] = []
+        if sample.cpuPercent >= 50 { out.append(cpu(sample.cpuPercent)) }
+        if sample.residentBytes >= 1_073_741_824 { out.append(memory(sample.residentBytes)) }
+        return out
+    }
+
     public static func stateWord(_ kind: CommandStatus.Kind) -> String {
         switch kind {
         case .stopped: "stopped"

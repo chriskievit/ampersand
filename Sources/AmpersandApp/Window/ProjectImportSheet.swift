@@ -63,7 +63,7 @@ struct ProjectImportSheet: View {
             Divider()
             HStack {
                 if folder != nil && project == nil {
-                    Button("Add command…") { model.editorRequest = .new }
+                    Button("Add command…") { model.editorRequest = .new() }
                 }
                 Spacer()
                 Button("Cancel", role: .cancel) { close() }
