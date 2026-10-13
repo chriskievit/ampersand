@@ -35,7 +35,7 @@ struct StatusGlyph: View {
         case .running: "circle.fill"
         case .starting, .stopping, .backoff: "circle.dashed"
         case .exited, .gaveUp, .failed: "xmark.octagon.fill"
-        case .stopped: "circle"
+        case .stopped, .finished: "circle"
         }
     }
 
@@ -44,7 +44,7 @@ struct StatusGlyph: View {
         case .running: .green
         case .starting, .stopping, .backoff: .orange
         case .exited, .gaveUp, .failed: .red
-        case .stopped: .secondary
+        case .stopped, .finished: .secondary
         }
     }
 }

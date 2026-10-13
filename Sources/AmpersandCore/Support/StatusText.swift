@@ -19,6 +19,8 @@ public enum StatusText {
             return "\(exitLabel(exit)) · \(time(at)) · \(tail)"
         case .exited(let exit, let at):
             return "\(exitLabel(exit)) · \(time(at))"
+        case .finished(let at):
+            return "exit 0 · \(time(at))"
         case .gaveUp(let exit, _):
             return "gave up after \(RestartPolicy.maxCrashes) restarts · \(exitLabel(exit))"
         case .failedToStart(let failure):
@@ -63,6 +65,7 @@ public enum StatusText {
         case .stopping: "stopping"
         case .backoff: "restarting"
         case .exited, .gaveUp: "crashed"
+        case .finished: "finished"
         case .failed: "couldn’t start"
         }
     }

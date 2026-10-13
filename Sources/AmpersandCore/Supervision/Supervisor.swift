@@ -82,7 +82,7 @@ public actor Supervisor {
             return
         case .stopping:
             await stopTask?.value
-        case .backoff, .exited, .gaveUp, .failed:
+        case .backoff, .exited, .finished, .gaveUp, .failed:
             status = .stopped
         case .starting, .running:
             guard let process else { status = .stopped; return }
@@ -190,6 +190,10 @@ public actor Supervisor {
         let now = clock.now
         if stopRequested {
             status = .stopped
+            return
+        }
+        if exit == .exited(0) {
+            status = .finished(at: now)   // a clean exit is not a crash
             return
         }
         guard spec.restart else {

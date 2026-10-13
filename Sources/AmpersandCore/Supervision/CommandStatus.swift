@@ -13,11 +13,13 @@ public enum CommandStatus: Sendable, Equatable {
     case stopping
     case backoff(exit: ProcessExit, at: Date, restartAt: Date)
     case exited(ProcessExit, at: Date)
+    /// Exited with status 0 on its own: not a crash, never restarted, never notified.
+    case finished(at: Date)
     case gaveUp(exit: ProcessExit, at: Date)
     case failedToStart(StartFailure)
 
     public enum Kind: Sendable, Equatable {
-        case stopped, starting, running, stopping, backoff, exited, gaveUp, failed
+        case stopped, starting, running, stopping, backoff, exited, finished, gaveUp, failed
     }
 
     public var kind: Kind {
@@ -28,6 +30,7 @@ public enum CommandStatus: Sendable, Equatable {
         case .stopping: .stopping
         case .backoff: .backoff
         case .exited: .exited
+        case .finished: .finished
         case .gaveUp: .gaveUp
         case .failedToStart: .failed
         }

@@ -49,3 +49,8 @@ private let fixedTime: @Sendable (Date) -> String = { _ in "14:02" }
     #expect(StatusText.stateWord(.backoff) == "restarting")
     #expect(StatusText.stateWord(.gaveUp) == "crashed")
 }
+
+@Test func finishedStampAndWord() {
+    #expect(StatusText.stamp(for: .finished(at: t0), now: t0, time: fixedTime) == "exit 0 · 14:02")
+    #expect(StatusText.stateWord(.finished) == "finished")
+}

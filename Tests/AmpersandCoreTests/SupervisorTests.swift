@@ -188,3 +188,15 @@ func eventually(_ s: Supervisor, timeout: Duration = .seconds(3), _ kind: Comman
         await s.shutdown()
     }
 }
+
+@Suite(.serialized) struct SupervisorCleanExitTests {
+    @Test func cleanExitFinishesQuietlyAndIsNotRestarted() async throws {
+        let s = makeSupervisor("exit 0", restart: true, factor: 100)
+        await s.start()
+        #expect(await eventually(s, .finished))
+        try await Task.sleep(for: .milliseconds(300))   // a restart would have happened by now
+        #expect(await s.status.kind == .finished)
+        #expect(await s.currentPID == nil)
+        #expect(await s.status.isActive == false)
+    }
+}

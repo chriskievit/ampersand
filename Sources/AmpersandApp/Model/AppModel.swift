@@ -443,7 +443,7 @@ final class AppModel {
                 }
             case .running, .stopping:
                 break
-            case .stopped, .backoff, .exited, .gaveUp, .failed:
+            case .stopped, .backoff, .exited, .finished, .gaveUp, .failed:
                 if let pid = runtime.pid { sampler.forget(group: pid) }
                 runtime.pid = nil
                 runtime.sample = nil
