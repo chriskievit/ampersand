@@ -25,6 +25,8 @@ struct CommandBarView: View {
             footer
         }
         .frame(width: 360)
+        // Keys keep working after Tab moves focus off the filter field.
+        .onKeyPress(phases: .down, action: handleKey)
         .animation(reduceMotion ? nil : .snappy, value: model.popoverSelection)
         .animation(reduceMotion ? nil : .snappy, value: model.banner)
         .background(WindowVisibilityReader { visible in
@@ -176,7 +178,7 @@ struct CommandBarView: View {
     }
 
     private var quitTitles: [String] {
-        let count = model.activeCount
+        let count = model.processCount
         guard count > 0 else { return ["Quit"] }
         return ["Quit and Stop \(count) \(count == 1 ? "Process" : "Processes")", "Quit and Stop \(count)", "Quit"]
     }

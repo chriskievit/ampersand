@@ -111,6 +111,10 @@ final class AppModel {
     var sections: [ConfigSection] { ConfigEditor.sections(of: config) }
     var orderedRuntimes: [CommandRuntime] { sections.flatMap(\.commands).compactMap { runtimes[$0.id] } }
     var activeCount: Int { runtimes.values.filter { $0.status.isActive }.count }
+    /// Commands with a live process (what quitting actually stops); excludes pending restarts.
+    var processCount: Int {
+        runtimes.values.filter { [.starting, .running, .stopping].contains($0.status.kind) }.count
+    }
     var runningCount: Int { runtimes.values.filter { [.starting, .running].contains($0.status.kind) }.count }
     var attentionCount: Int { runtimes.values.filter { [.exited, .gaveUp, .failed].contains($0.status.kind) }.count }
 

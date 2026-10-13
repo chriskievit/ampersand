@@ -59,26 +59,7 @@ struct CommandForm<Header: View, Footer: View>: View {
             .dropDestination(for: URL.self) { urls, _ in
                 if let url = urls.first { draft.cwd = (url.path as NSString).abbreviatingWithTildeInPath }
             }
-            Section {
-                TextEditor(text: $draft.envText)
-                    .font(.system(.body, design: .monospaced))
-                    .frame(minHeight: 64)
-                    .accessibilityLabel("Environment variables")
-            } header: {
-                Text("Environment")
-            } footer: {
-                VStack(alignment: .leading, spacing: 2) {
-                    ForEach(draft.envErrors, id: \.line) { error in
-                        Label {
-                            Text(verbatim: "Line \(error.line): \(error.message)")
-                        } icon: {
-                            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.yellow)
-                        }
-                    }
-                    Text("One KEY=value per line. Lines that start with # are comments.")
-                }
-                .foregroundStyle(.secondary)
-            }
+            EnvironmentSection(envText: $draft.envText)
             Section("Network") {
                 TextField("Port", text: $draft.portText,
                           prompt: Text(draft.makeSpec().port.map(String.init) ?? "None"))
