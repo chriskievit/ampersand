@@ -39,3 +39,24 @@ import Testing
     #expect(r.errors[1].message == "Invalid variable name \"1BAD\"")
     #expect(r.errors[2].message == "Missing closing quote")
 }
+
+@Test func pairsKeepOrderAndLastWins() {
+    let pairs = EnvParser.parsePairs("B=2\n# note\nA=1\nB=3")
+    #expect(pairs.map(\.key) == ["B", "A"])
+    #expect(pairs.map(\.value) == ["3", "1"])
+}
+
+@Test func serializeRoundTripsAwkwardValues() {
+    let pairs: [EnvParser.Pair] = [
+        .init(key: "PLAIN", value: "abc"),
+        .init(key: "SPACES", value: "a b"),
+        .init(key: "HASH", value: "x #y"),
+        .init(key: "QUOTES", value: #"say "hi""#),
+        .init(key: "NEWLINE", value: "l1\nl2"),
+        .init(key: "EMPTY", value: ""),
+    ]
+    let text = EnvParser.serialize(pairs)
+    #expect(text.hasPrefix("PLAIN=abc\nSPACES=\"a b\""))
+    #expect(EnvParser.parsePairs(text) == pairs)
+    #expect(EnvParser.parse(text).errors.isEmpty)
+}

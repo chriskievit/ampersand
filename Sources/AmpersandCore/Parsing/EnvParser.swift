@@ -13,7 +13,45 @@ public struct EnvParseResult: Sendable, Equatable {
 /// Parses `.env`-style text: `KEY=value`, `export KEY=value`, `#` comments,
 /// single quotes (literal), double quotes (supports \n, \t, \", \\).
 public enum EnvParser {
+    public struct Pair: Sendable, Equatable {
+        public var key: String
+        public var value: String
+        public init(key: String, value: String) { self.key = key; self.value = value }
+    }
+
     public static func parse(_ text: String) -> EnvParseResult {
+        let scanned = scan(text)
+        var values: [String: String] = [:]
+        for pair in scanned.pairs { values[pair.key] = pair.value }
+        return EnvParseResult(values: values, errors: scanned.errors)
+    }
+
+    /// Variables in file order; a repeated key keeps its first position and its last value.
+    public static func parsePairs(_ text: String) -> [Pair] { scan(text).pairs }
+
+    /// Writes variables as `.env` text that `parsePairs` reads back exactly.
+    public static func serialize(_ pairs: [Pair]) -> String {
+        pairs.map { "\($0.key)=\(quoted($0.value))" }.joined(separator: "\n")
+    }
+
+    private static func quoted(_ value: String) -> String {
+        let needsQuotes = value.contains { $0.isWhitespace || "#\"'\\".contains($0) }
+        guard needsQuotes else { return value }
+        var out = "\""
+        for ch in value {
+            switch ch {
+            case "\\": out += "\\\\"
+            case "\"": out += "\\\""
+            case "\n": out += "\\n"
+            case "\t": out += "\\t"
+            default: out.append(ch)
+            }
+        }
+        return out + "\""
+    }
+
+    private static func scan(_ text: String) -> (pairs: [Pair], errors: [EnvParseError]) {
+        var pairs: [Pair] = []
         var result = EnvParseResult(values: [:], errors: [])
         for (index, rawLine) in text.components(separatedBy: "\n").enumerated() {
             let lineNumber = index + 1
@@ -33,11 +71,13 @@ public enum EnvParser {
             }
             let rawValue = line[line.index(after: eq)...].trimmingCharacters(in: .whitespaces)
             switch parseValue(rawValue) {
-            case .success(let value): result.values[key] = value
+            case .success(let value):
+                if let i = pairs.firstIndex(where: { $0.key == key }) { pairs[i].value = value }
+                else { pairs.append(Pair(key: key, value: value)) }
             case .failure(let message): result.errors.append(.init(line: lineNumber, message: message))
             }
         }
-        return result
+        return (pairs, result.errors)
     }
 
     private enum ValueResult { case success(String), failure(String) }
