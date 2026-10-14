@@ -76,3 +76,55 @@ private func config() -> AppConfig {
     #expect(sections[2].commands.map(\.name) == ["caffeinate", "orphan"])
     #expect(ConfigEditor.sections(of: AppConfig(groups: [], commands: [])).isEmpty)
 }
+
+@Test func moveIntoGroupAtPosition() throws {
+    // api, web in "pro"; caffeinate ungrouped.
+    var c = config()
+    let (api, web, caff) = (c.commands[0], c.commands[1], c.commands[2])
+
+    ConfigEditor.move(id: caff.id, toGroup: "pro", at: 1, in: &c)
+    #expect(ConfigEditor.sections(of: c).first { $0.id == "pro" }?.commands.map(\.id) == [api.id, caff.id, web.id])
+
+    ConfigEditor.move(id: caff.id, toGroup: "pro", at: 0, in: &c)
+    #expect(ConfigEditor.sections(of: c)[0].commands.map(\.id) == [caff.id, api.id, web.id])
+
+    // Past the end: right after the group's last command, not at the end of the whole list.
+    c.commands.append(CommandSpec(name: "tail", command: "true"))
+    ConfigEditor.move(id: caff.id, toGroup: "pro", at: 99, in: &c)
+    #expect(c.commands.map(\.name) == ["api", "web", "caffeinate", "tail"])
+    #expect(ConfigEditor.sections(of: c)[0].commands.map(\.id) == [api.id, web.id, caff.id])
+}
+
+@Test func moveIntoEmptyGroupAndOutOfGroups() throws {
+    var c = config()
+    let web = c.commands[1]
+    let empty = ConfigEditor.addGroup(named: "Empty", to: &c)
+    ConfigEditor.move(id: web.id, toGroup: empty.id, at: 0, in: &c)
+    #expect(ConfigEditor.sections(of: c).first { $0.id == empty.id }?.commands.map(\.name) == ["web"])
+
+    // Ungrouped: a command whose group no longer exists counts as ungrouped too.
+    c.commands.append(CommandSpec(name: "orphan", command: "true", group: "deleted"))
+    ConfigEditor.move(id: web.id, toGroup: nil, at: 1, in: &c)
+    let ungrouped = try #require(ConfigEditor.sections(of: c).last)
+    #expect(ungrouped.group == nil)
+    #expect(ungrouped.commands.map(\.name) == ["caffeinate", "web", "orphan"])
+    #expect(c.commands.first { $0.id == web.id }?.group == nil)
+}
+
+@Test func moveByPlacement() {
+    var c = config()
+    let (api, web, caff) = (c.commands[0], c.commands[1], c.commands[2])
+    ConfigEditor.move(id: caff.id, toGroup: "pro", placing: .after(api.id), in: &c)
+    #expect(ConfigEditor.sections(of: c)[0].commands.map(\.id) == [api.id, caff.id, web.id])
+    // Same group, downwards: below web puts it last.
+    ConfigEditor.move(id: caff.id, toGroup: "pro", placing: .after(web.id), in: &c)
+    #expect(ConfigEditor.sections(of: c)[0].commands.map(\.id) == [api.id, web.id, caff.id])
+    ConfigEditor.move(id: caff.id, toGroup: "pro", placing: .before(api.id), in: &c)
+    #expect(ConfigEditor.sections(of: c)[0].commands.map(\.id) == [caff.id, api.id, web.id])
+    // A drop on the command itself changes nothing.
+    let before = c
+    ConfigEditor.move(id: caff.id, toGroup: "pro", placing: .before(caff.id), in: &c)
+    #expect(c == before)
+    ConfigEditor.move(id: api.id, toGroup: nil, placing: .end, in: &c)
+    #expect(ConfigEditor.sections(of: c).last?.commands.map(\.id) == [api.id])
+}
