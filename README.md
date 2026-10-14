@@ -88,6 +88,10 @@ purpose: commands and one level of groups, without tags, dashboards or plugins.
 - **Run once** tries a command inside the editor before you save it.
 - Per command: working directory, environment variables, a `.env` file, start
   when Ampersand launches, and restart on crash.
+- Per group: a working directory that its commands use when they have none of
+  their own. A command's own folder always wins. Folders are full paths
+  (`/…` or `~/…`). When a group change moves running commands to a different
+  folder, Ampersand asks whether to restart them.
 - Every edit applies immediately and can be undone with <kbd>⌘Z</kbd>.
 
 ### Logs

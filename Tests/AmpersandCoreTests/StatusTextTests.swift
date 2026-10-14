@@ -77,3 +77,12 @@ private let fixedTime: @Sendable (Date) -> String = { _ in "14:02" }
     #expect(StatusText.menuBarLabel(active: 3, crashed: 0) == "Ampersand, 3 active")
     #expect(StatusText.menuBarLabel(active: 12, crashed: 1) == "Ampersand, 12 active, 1 crashed")
 }
+
+@Test func restartPromptCopy() {
+    let one = StatusText.restartPrompt(names: ["api"])
+    #expect(one.title == "Restart “api”?")
+    #expect(one.message == "Its working directory changed. It keeps running in the old folder until it restarts.")
+    let two = StatusText.restartPrompt(names: ["api", "web"])
+    #expect(two.title == "Restart 2 commands?")
+    #expect(two.message == "The working directory changed for api and web. They keep running in the old folder until they restart.")
+}

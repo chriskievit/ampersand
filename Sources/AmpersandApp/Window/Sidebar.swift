@@ -9,6 +9,7 @@ struct Sidebar: View {
     @State private var revealGroup: String?
     @FocusState private var renameFocused: Bool
     @State private var dropTargetGroup: String?
+    @State private var editingGroup: GroupSpec?
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -72,6 +73,7 @@ struct Sidebar: View {
             }
         }
         .listStyle(.sidebar)
+        .sheet(item: $editingGroup) { group in GroupSettingsSheet(model: model, group: group) }
         .searchable(text: $query, placement: .sidebar, prompt: "Search")
         .onDeleteCommand {
             if let id = model.windowSelection { model.delete(id) }
@@ -147,6 +149,7 @@ struct Sidebar: View {
                             Button("Stop all") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
                             Divider()
                             Button("Rename…") { beginRename(group) }
+                            Button("Group settings…") { editingGroup = group }
                             Button("Delete group", role: .destructive) { model.deleteGroup(group.id) }
                         }
                 }
@@ -171,7 +174,8 @@ struct Sidebar: View {
     }
 
     /// Every drag in the sidebar ends here: between rows or on a group header. Same-group drops
-    /// reorder; drops on another group also move the command into it. Nothing restarts.
+    /// reorder; drops on another group also move the command into it, and offer a restart
+    /// when that changes its working directory.
     @discardableResult
     private func drop(_ id: UUID, into section: ConfigSection, placing: ConfigEditor.Placement) -> Bool {
         guard model.runtime(id) != nil else { return false }

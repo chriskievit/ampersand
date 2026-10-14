@@ -46,6 +46,18 @@ public enum StatusText {
         return parts.joined(separator: ", ")
     }
 
+    /// The alert that offers a restart after a group-level change moved running commands to another folder.
+    public static func restartPrompt(names: [String]) -> (title: String, message: String) {
+        guard names.count > 1, let last = names.last else {
+            return ("Restart “\(names.first ?? "")”?",
+                    "Its working directory changed. It keeps running in the old folder until it restarts.")
+        }
+        // The app's copy is English, so join in English whatever the system language is.
+        let list = names.dropLast().joined(separator: ", ") + " and " + last
+        return ("Restart \(names.count) commands?",
+                "The working directory changed for \(list). They keep running in the old folder until they restart.")
+    }
+
     public static func failure(_ failure: StartFailure) -> String {
         switch failure {
         case .folderMissing: "folder missing"
