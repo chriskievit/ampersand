@@ -1,3 +1,4 @@
+import AmpersandCore
 import AppKit
 
 @MainActor
@@ -5,7 +6,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let model = AppModel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        LoginItemService.refreshRegistration()
+        // A development copy with its own config must not take over the installed app's login item.
+        if ConfigStore.overrideDirectory() == nil { LoginItemService.refreshRegistration() }
         model.launch()
     }
 

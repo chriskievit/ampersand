@@ -74,3 +74,13 @@ private let sample = AppConfig(
     #expect(spec.expandedCwd == NSHomeDirectory() + "/dev")
     #expect(CommandSpec(name: "x", command: "true").expandedCwd == nil)
 }
+
+@Test func configDirectoryOverride() {
+    #expect(ConfigStore.overrideDirectory(environment: [:]) == nil)
+    #expect(ConfigStore.overrideDirectory(environment: ["AMPERSAND_CONFIG_DIR": "  "]) == nil)
+    #expect(ConfigStore.overrideDirectory(environment: ["AMPERSAND_CONFIG_DIR": "/tmp/amp"])?.path == "/tmp/amp")
+    let home = FileManager.default.homeDirectoryForCurrentUser.path
+    #expect(ConfigStore.overrideDirectory(environment: ["AMPERSAND_CONFIG_DIR": "~/amp-dev"])?.path == "\(home)/amp-dev")
+    #expect(ConfigStore.defaultDirectory(environment: ["AMPERSAND_CONFIG_DIR": "/tmp/amp"]).path == "/tmp/amp")
+    #expect(ConfigStore.defaultDirectory(environment: [:]).lastPathComponent == "Ampersand")
+}
