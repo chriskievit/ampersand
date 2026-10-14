@@ -1,3 +1,13 @@
+# [1.3.0](https://github.com/chriskievit/ampersand/compare/v1.2.0...v1.3.0) (2026-10-14)
+
+
+### Features
+
+* **groups:** give a group a working directory that its commands inherit ([#15](https://github.com/chriskievit/ampersand/issues/15)) ([14d84b6](https://github.com/chriskievit/ampersand/commit/14d84b6837f9f7f8e7a9eb3baa5877c062ad93ac)), closes [#9](https://github.com/chriskievit/ampersand/issues/9)
+* **menubar:** show the active count and a crash mark on the icon ([#13](https://github.com/chriskievit/ampersand/issues/13)) ([2bd8a61](https://github.com/chriskievit/ampersand/commit/2bd8a6144a8f0c34cd44cbcfc2d67af341d9055c)), closes [#10](https://github.com/chriskievit/ampersand/issues/10)
+* **window:** drag commands between groups ([#14](https://github.com/chriskievit/ampersand/issues/14)) ([1d41ca7](https://github.com/chriskievit/ampersand/commit/1d41ca7e4a92f459ce8dad357dfe8b89e0aeff04)), closes [#8](https://github.com/chriskievit/ampersand/issues/8)
+* **window:** name a new group before it is added ([#12](https://github.com/chriskievit/ampersand/issues/12)) ([547fc95](https://github.com/chriskievit/ampersand/commit/547fc95168b639696e08c7f7a39f10fd2b577f63)), closes [#7](https://github.com/chriskievit/ampersand/issues/7)
+
 # [1.2.0](https://github.com/chriskievit/ampersand/compare/v1.1.1...v1.2.0) (2026-10-13)
 
 
