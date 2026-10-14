@@ -78,7 +78,7 @@ struct AppCommands: Commands {
             Button("Move down") { if let selected { model.move(selected.id, by: 1) } }
                 .keyboardShortcut(.downArrow, modifiers: [.command, .option])
                 .disabled(selected == nil)
-            Button("New group") { model.addGroup(named: "") }
+            Button("New group…") { model.requestNewGroup() }
             Divider()
             // No ⌘⌫ here: a menu key equivalent would fire while editing text. The sidebar's
             // Edit ▸ Delete (onDeleteCommand) covers the keyboard path.
