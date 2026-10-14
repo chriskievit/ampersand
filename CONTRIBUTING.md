@@ -30,8 +30,16 @@ it copies `Resources/Info.plist`, compiles the Icon Composer document in
 `Resources/Ampersand.icon` with `actool`, and signs the bundle ad hoc.
 
 Ampersand reads and writes `~/Library/Application Support/Ampersand/`. A
-development build uses the same folder as an installed one, so export your
-configuration first (**File ▸ Export…**) if you rely on it.
+development build uses the same folder as an installed one, and `scripts/run.sh`
+quits the installed copy first. To keep your own commands running, give the
+development build a folder of its own:
+
+```bash
+AMPERSAND_CONFIG_DIR=~/ampersand-dev scripts/run.sh
+```
+
+It then runs as a second copy next to the installed app, with its own commands,
+and leaves the login item alone. Settings (`UserDefaults`) are still shared.
 
 ## Testing
 

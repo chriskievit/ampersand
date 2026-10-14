@@ -13,9 +13,19 @@ public final class ConfigStore: Sendable {
 
     public init(directory: URL) { self.directory = directory }
 
-    public static func defaultDirectory() -> URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Ampersand", isDirectory: true)
+    /// Development builds set this to run next to an installed copy without sharing its commands.
+    public static let directoryOverrideKey = "AMPERSAND_CONFIG_DIR"
+
+    public static func defaultDirectory(environment: [String: String] = ProcessInfo.processInfo.environment) -> URL {
+        overrideDirectory(environment: environment)
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("Ampersand", isDirectory: true)
+    }
+
+    public static func overrideDirectory(environment: [String: String] = ProcessInfo.processInfo.environment) -> URL? {
+        guard let path = environment[directoryOverrideKey]?.trimmingCharacters(in: .whitespaces),
+              !path.isEmpty else { return nil }
+        return URL(fileURLWithPath: (path as NSString).expandingTildeInPath, isDirectory: true)
     }
 
     public func load() throws -> AppConfig {
