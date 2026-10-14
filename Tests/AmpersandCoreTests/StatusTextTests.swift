@@ -63,3 +63,17 @@ private let fixedTime: @Sendable (Date) -> String = { _ in "14:02" }
     #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 1, residentBytes: gib)) == ["1.0 GB"])
     #expect(StatusText.notableMetrics(ResourceSample(cpuPercent: 120, residentBytes: 2 * gib)) == ["120%", "2.0 GB"])
 }
+
+@Test func menuBarCount() {
+    #expect(StatusText.menuBarCount(0) == nil)
+    #expect(StatusText.menuBarCount(1) == "1")
+    #expect(StatusText.menuBarCount(9) == "9")
+    #expect(StatusText.menuBarCount(10) == "9+")
+    #expect(StatusText.menuBarCount(42) == "9+")
+}
+
+@Test func menuBarAccessibilityLabel() {
+    #expect(StatusText.menuBarLabel(active: 0, crashed: 0) == "Ampersand, 0 active")
+    #expect(StatusText.menuBarLabel(active: 3, crashed: 0) == "Ampersand, 3 active")
+    #expect(StatusText.menuBarLabel(active: 12, crashed: 1) == "Ampersand, 12 active, 1 crashed")
+}

@@ -3,10 +3,11 @@ import ServiceManagement
 import SwiftUI
 import UserNotifications
 
-/// ⌘, Settings: three items (spec 4.4).
+/// ⌘, Settings (spec 4.4).
 struct AppSettingsView: View {
     @AppStorage(NotificationService.enabledKey) private var notificationsEnabled = true
     @AppStorage(AppDefaults.restartOnCrashKey) private var restartDefault = true
+    @AppStorage(MenuBarIcon.showCountKey) private var showMenuBarCount = true
     @State private var loginStatus = LoginItemService.status
     @State private var loginError: String?
     @State private var notificationStatus: UNAuthorizationStatus = .notDetermined
@@ -42,6 +43,7 @@ struct AppSettingsView: View {
                 }
             }
             Toggle("Restart new commands when they crash", isOn: $restartDefault)
+            Toggle("Show active count in menu bar", isOn: $showMenuBarCount)
         }
         .formStyle(.grouped)
         .frame(width: 460)

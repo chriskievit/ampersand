@@ -117,7 +117,7 @@ The palette is the system's: adaptive semantic colours that follow Light/Dark, I
 - **Prompt Green** and **Graphite**: the Liquid Glass icon's glyph layer and automatic-gradient fill.
 
 ### Named Rules
-**The Shape Before Colour Rule.** Every status is readable in greyscale: filled, dashed, octagon, hollow. Colour only confirms. The menu bar icon is a template image, so its attention signal is a dot (shape), never red.
+**The Shape Before Colour Rule.** Every status is readable in greyscale: filled, dashed, octagon, hollow. Colour only confirms. The menu bar icon is a template image, so its attention signal is a crash mark (a disc with a cut-out "!", shape), never red.
 
 **The Accent Is a Pressable Rule.** The accent colour marks things you can press and the current selection. Status colour never leaks into text, rows or backgrounds.
 
@@ -177,7 +177,7 @@ SF Symbols in a 16 pt column; `.contentTransition(.symbolEffect(.replace))` on c
 | Finished (exit 0) | `circle` | `.secondary` | `exit 0 · 14:02` |
 | Running, health failing | `circle.fill` + small `exclamationmark.triangle.fill` badge, bottom trailing | `.green` + `.yellow` | metrics |
 
-A clean exit is quiet: hollow glyph, stamp, no notification, no menu bar dot. Exit stamps persist until the user acts.
+A clean exit is quiet: hollow glyph, stamp, no notification, no menu bar crash mark. Exit stamps persist until the user acts.
 
 ### Command Row (popover)
 - **Default:** glyph, medium-weight name, secondary `:port`, secondary tabular uptime (plus notable metrics) or stamp.
@@ -223,7 +223,7 @@ Sidebar rows: `Label` with the status glyph as icon, middle-truncated name, trai
 AppKit text view on `textBackgroundColor`, SF Mono at the system size, ANSI styles mapped per The Log Keeps Its Colours Rule, auto-follow with a "Jump to Latest" button when scrolled up, "No Output" `ContentUnavailableView` when empty. Clear / Copy / Export live in the toolbar ⋯ menu.
 
 ### Menu Bar Item
-Template image of a semibold system `&` (20 × 18 pt): 45 % opacity when nothing runs, full when anything runs, plus a 5 pt dot when something crashed or gave up.
+Template image of a semibold system `&` (18 pt high, 20 pt wide when idle): 45 % opacity when nothing is active, full when anything is active (starting, running, stopping or restarting). To its right, the active count in small semibold tabular digits ("9+" past nine), hidden at zero and switchable in Settings ("Show active count in menu bar", on by default). Then a 9 pt crash mark, a disc with a cut-out "!", while any command has exited, gave up or couldn't start; it shows with or without a count and Settings cannot hide it. The image widens only when it shows a count or the mark. VoiceOver: "Ampersand, 3 active, 1 crashed".
 
 ### App Icon
 `Resources/Ampersand.icon`, Icon Composer (macOS 26 Liquid Glass): one glass layer, `&_` (an ampersand plus a cursor underscore) in Prompt Green, drawn from JetBrains Mono ExtraBold (SIL OFL 1.1, credited in `docs/design/icon.md`), on an automatic Graphite gradient; neutral shadow 0.5, translucency 0.4. SF Pro and SF Symbols are excluded from icons by Apple's licence.

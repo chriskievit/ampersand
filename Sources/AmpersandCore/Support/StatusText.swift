@@ -30,6 +30,22 @@ public enum StatusText {
         }
     }
 
+    /// The number beside the menu bar "&": nothing when idle, and "9+" past nine so the icon stays narrow.
+    public static func menuBarCount(_ active: Int) -> String? {
+        switch active {
+        case ...0: nil
+        case 1...9: "\(active)"
+        default: "9+"
+        }
+    }
+
+    /// VoiceOver label for the menu bar item; it uses the same count as the icon.
+    public static func menuBarLabel(active: Int, crashed: Int) -> String {
+        var parts = ["Ampersand", "\(active) active"]
+        if crashed > 0 { parts.append("\(crashed) crashed") }
+        return parts.joined(separator: ", ")
+    }
+
     public static func failure(_ failure: StartFailure) -> String {
         switch failure {
         case .folderMissing: "folder missing"
