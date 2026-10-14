@@ -8,6 +8,7 @@ struct Sidebar: View {
     @State private var query = ""
     @State private var revealGroup: String?
     @FocusState private var renameFocused: Bool
+    @State private var dropTargetGroup: String?
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -33,11 +34,40 @@ struct Sidebar: View {
                             row(runtime).tag(spec.id)
                         }
                     }
-                    .onMove { offsets, destination in
-                        move(in: section, from: offsets, to: destination)
+                    // Drops between rows, from this group or another, with the list's own insertion line.
+                    .dropDestination(for: String.self) { items, index in
+                        guard let id = items.first.flatMap(UUID.init(uuidString:)) else { return }
+                        // The index counts visible rows; anchor to a row so a search filter can't skew it.
+                        let visible = section.commands.map(\.id)
+                        let placing: ConfigEditor.Placement = index < visible.count
+                            ? .before(visible[index])
+                            : visible.last.map { .after($0) } ?? .end
+                        drop(id, into: section, placing: placing)
                     }
                 } header: {
-                    header(for: section)
+                    if section.group != nil || !model.config.groups.isEmpty {
+                        header(for: section)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            // Drawn outside the text's frame, so the header does not move.
+                            .background {
+                                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                    .fill(Color.accentColor.opacity(0.2))
+                                    .padding(.horizontal, -6)
+                                    .padding(.vertical, -2)
+                                    .opacity(dropTargetGroup == section.id ? 1 : 0)
+                            }
+                            // A drop on the header (or on an empty group) goes to the end of the group.
+                            .dropDestination(for: String.self) { items, _ in
+                                guard let id = items.first.flatMap(UUID.init(uuidString:)) else { return false }
+                                return drop(id, into: section, placing: .end)
+                            } isTargeted: { targeted in
+                                if targeted {
+                                    dropTargetGroup = section.id
+                                } else if dropTargetGroup == section.id {
+                                    dropTargetGroup = nil
+                                }
+                            }
+                    }
                 }
             }
         }
@@ -89,6 +119,7 @@ struct Sidebar: View {
             }
         }
         .help(runtime.spec.command)
+        .itemProvider { NSItemProvider(object: runtime.id.uuidString as NSString) }
         .contextMenu { CommandContextMenu(runtime: runtime, model: model) }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(runtime.spec.name), \(StatusText.stateWord(runtime.status.kind))")
@@ -139,21 +170,12 @@ struct Sidebar: View {
         renamingGroup = nil
     }
 
-    /// Native list reordering within a section; moving between groups is in the context menu.
-    private func move(in section: ConfigSection, from offsets: IndexSet, to destination: Int) {
-        guard let source = offsets.first else { return }
-        let ids = section.commands.map(\.id)
-        let id = ids[source]
-        if destination < ids.count {
-            if ids[destination] != id { model.reorder(id, before: ids[destination]) }
-        } else if let last = ids.last, last != id {
-            // Past the end of this group: place it right after the group's last command.
-            let all = model.config.commands.map(\.id)
-            if let lastIndex = all.firstIndex(of: last), lastIndex + 1 < all.count {
-                model.reorder(id, before: all[lastIndex + 1])
-            } else {
-                model.reorder(id, before: nil)
-            }
-        }
+    /// Every drag in the sidebar ends here: between rows or on a group header. Same-group drops
+    /// reorder; drops on another group also move the command into it. Nothing restarts.
+    @discardableResult
+    private func drop(_ id: UUID, into section: ConfigSection, placing: ConfigEditor.Placement) -> Bool {
+        guard model.runtime(id) != nil else { return false }
+        model.move(id, toGroup: section.group?.id, placing: placing)
+        return true
     }
 }

@@ -52,6 +52,41 @@ public enum ConfigEditor {
         config.commands[i].group = group
     }
 
+    /// Moves a command into `group` (nil: no group) at `index` among that group's commands,
+    /// as a drop between sidebar rows does. Past the end means right after the group's last
+    /// command; in an empty group the command keeps its place in the list.
+    public static func move(id: UUID, toGroup group: String?, at index: Int, in config: inout AppConfig) {
+        guard let i = config.commands.firstIndex(where: { $0.id == id }) else { return }
+        let siblings = (sections(of: config).first { $0.id == (group ?? "") }?.commands ?? [])
+            .map(\.id).filter { $0 != id }
+        config.commands[i].group = group
+        if index < siblings.count {
+            reorder(id: id, before: siblings[max(0, index)], in: &config)
+        } else if let last = siblings.last {
+            let others = config.commands.map(\.id).filter { $0 != id }
+            let after = others.firstIndex(of: last).map { $0 + 1 }
+            reorder(id: id, before: after.flatMap { others.indices.contains($0) ? others[$0] : nil }, in: &config)
+        }
+    }
+
+    /// Where a dropped command lands: next to the row it was dropped on, or after the group's last.
+    public enum Placement: Sendable, Equatable {
+        case before(UUID), after(UUID), end
+    }
+
+    public static func move(id: UUID, toGroup group: String?, placing: Placement, in config: inout AppConfig) {
+        let siblings = (sections(of: config).first { $0.id == (group ?? "") }?.commands ?? [])
+            .map(\.id).filter { $0 != id }
+        let index: Int
+        switch placing {
+        case .before(id), .after(id): return
+        case .before(let target): index = siblings.firstIndex(of: target) ?? siblings.count
+        case .after(let target): index = siblings.firstIndex(of: target).map { $0 + 1 } ?? siblings.count
+        case .end: index = siblings.count
+        }
+        move(id: id, toGroup: group, at: index, in: &config)
+    }
+
     public static func reorder(id: UUID, before target: UUID?, in config: inout AppConfig) {
         guard id != target, let i = config.commands.firstIndex(where: { $0.id == id }) else { return }
         let spec = config.commands.remove(at: i)

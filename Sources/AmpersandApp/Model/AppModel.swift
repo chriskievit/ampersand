@@ -327,6 +327,13 @@ final class AppModel {
         persist()
     }
 
+    /// A sidebar drop: into `group`, next to a row or at the end. Never restarts.
+    func move(_ id: UUID, toGroup group: String?, placing: ConfigEditor.Placement) {
+        ConfigEditor.move(id: id, toGroup: group, placing: placing, in: &config)
+        runtimes[id]?.spec.group = group
+        persist()
+    }
+
     func reorder(_ id: UUID, before target: UUID?) {
         ConfigEditor.reorder(id: id, before: target, in: &config)
         persist()
