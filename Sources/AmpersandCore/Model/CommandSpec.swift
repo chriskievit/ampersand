@@ -31,7 +31,9 @@ public enum HealthCheck: Codable, Sendable, Hashable {
 public struct GroupSpec: Codable, Sendable, Hashable, Identifiable {
     public var id: String
     public var name: String
-    public init(id: String, name: String) { self.id = id; self.name = name }
+    /// Working directory for the group's commands that have none of their own. Optional in JSON.
+    public var cwd: String?
+    public init(id: String, name: String, cwd: String? = nil) { self.id = id; self.name = name; self.cwd = cwd }
 }
 
 public struct CommandSpec: Codable, Sendable, Hashable, Identifiable {
@@ -60,10 +62,8 @@ public struct CommandSpec: Codable, Sendable, Hashable, Identifiable {
     }
 
     /// Working directory with a leading `~` expanded, or nil when unset or blank.
-    public var expandedCwd: String? {
-        guard let cwd, !cwd.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
-        return (cwd as NSString).expandingTildeInPath
-    }
+    /// Only the command's own folder: `ConfigEditor.launchSpec` fills in the group's.
+    public var expandedCwd: String? { WorkingDirectory.expanded(cwd) }
 }
 
 public struct AppConfig: Codable, Sendable, Equatable {

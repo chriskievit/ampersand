@@ -28,6 +28,11 @@ enum EditorRequest: Identifiable, Equatable {
 
 enum DetailTab: Hashable { case log, settings }
 
+/// Running commands whose working directory changed through their group; the window asks to restart them.
+struct RestartPrompt: Equatable {
+    var ids: [UUID]
+}
+
 /// Single source of truth for the UI. Owns every Supervisor.
 @MainActor @Observable
 final class AppModel {
@@ -43,6 +48,7 @@ final class AppModel {
     var editorRequest: EditorRequest?
     /// The window's "New group" alert; the toolbar and the Command menu both open it.
     var isAddingGroup = false
+    var restartPrompt: RestartPrompt?
     var isPopoverVisible = false { didSet { if isPopoverVisible { sampleNow() } } }
     var isWindowVisible = false { didSet { if isWindowVisible { sampleNow() } } }
 
@@ -271,12 +277,18 @@ final class AppModel {
     func save(_ spec: CommandSpec) -> Bool {
         if let runtime = runtimes[spec.id] {
             let old = runtime.spec
-            let launchChanged = old.command != spec.command || old.cwd != spec.cwd
-                || old.env != spec.env || old.envFile != spec.envFile
+            let oldCwd = ConfigEditor.effectiveCwd(of: old, in: config)
             ConfigEditor.update(spec, in: &config)
             runtime.spec = spec
-            Task { await runtime.supervisor.update(spec: spec) }
-            if launchChanged && runtime.status.isActive { runtime.needsRestartToApply = true }
+            let cwdChanged = oldCwd != ConfigEditor.effectiveCwd(of: spec, in: config)
+            let launchChanged = old.command != spec.command || cwdChanged
+                || old.env != spec.env || old.envFile != spec.envFile
+            Task { await runtime.supervisor.update(spec: ConfigEditor.launchSpec(for: spec, in: config)) }
+            if launchChanged && runtime.status.isActive {
+                // Clearing its own folder hands it the group's: ask, as for the other group-level changes.
+                let nowInherits = WorkingDirectory.normalized(old.cwd) != nil && WorkingDirectory.normalized(spec.cwd) == nil
+                if cwdChanged && nowInherits { offerRestart([spec.id]) } else { runtime.needsRestartToApply = true }
+            }
         } else {
             ConfigEditor.add(spec, to: &config)
             makeRuntime(spec)
@@ -322,16 +334,12 @@ final class AppModel {
     }
 
     func move(_ id: UUID, toGroup group: String?) {
-        ConfigEditor.move(id: id, toGroup: group, in: &config)
-        runtimes[id]?.spec.group = group
-        persist()
+        changeGroups { config in ConfigEditor.move(id: id, toGroup: group, in: &config) }
     }
 
-    /// A sidebar drop: into `group`, next to a row or at the end. Never restarts.
+    /// A sidebar drop: into `group`, next to a row or at the end. Never restarts on its own.
     func move(_ id: UUID, toGroup group: String?, placing: ConfigEditor.Placement) {
-        ConfigEditor.move(id: id, toGroup: group, placing: placing, in: &config)
-        runtimes[id]?.spec.group = group
-        persist()
+        changeGroups { config in ConfigEditor.move(id: id, toGroup: group, placing: placing, in: &config) }
     }
 
     func reorder(_ id: UUID, before target: UUID?) {
@@ -351,10 +359,63 @@ final class AppModel {
         persist()
     }
 
+    /// Name and working directory from the group's settings sheet.
+    func updateGroup(_ id: String, name: String, cwd: String) {
+        changeGroups { config in
+            ConfigEditor.renameGroup(id: id, to: name, in: &config)
+            ConfigEditor.setGroupCwd(id: id, to: cwd, in: &config)
+        }
+    }
+
     func deleteGroup(_ id: String) {
-        ConfigEditor.deleteGroup(id: id, in: &config)
-        for runtime in runtimes.values where runtime.spec.group == id { runtime.spec.group = nil }
+        changeGroups { config in ConfigEditor.deleteGroup(id: id, in: &config) }
+    }
+
+    /// A change to groups or group membership. Commands whose effective working directory
+    /// changes get it for their next start; running ones are offered a restart.
+    private func changeGroups(_ change: (inout AppConfig) -> Void) {
+        let old = config
+        change(&config)
+        for spec in config.commands {
+            guard let runtime = runtimes[spec.id], runtime.spec != spec else { continue }
+            runtime.spec = spec
+        }
+        let changed = ConfigEditor.cwdChanges(from: old, to: config)
+        for id in changed {
+            guard let runtime = runtimes[id] else { continue }
+            let launch = ConfigEditor.launchSpec(for: runtime.spec, in: config)
+            Task { await runtime.supervisor.update(spec: launch) }
+        }
         persist()
+        offerRestart(changed)
+    }
+
+    /// Asks in the window whether to restart running commands now. Without a visible window
+    /// (a change from the popover) they get the passive "restart to apply" notice instead.
+    private func offerRestart(_ ids: [UUID]) {
+        let active = ids.filter { id in
+            guard let runtime = runtimes[id], runtime.status.isActive else { return false }
+            return runtime.launchedCwd != ConfigEditor.effectiveCwd(of: runtime.spec, in: config)
+        }
+        guard !active.isEmpty else { return }
+        guard isWindowVisible else {
+            active.forEach { runtimes[$0]?.needsRestartToApply = true }
+            return
+        }
+        let pending = restartPrompt?.ids ?? []
+        restartPrompt = RestartPrompt(ids: pending + active.filter { !pending.contains($0) })
+    }
+
+    var restartPromptText: (title: String, message: String) {
+        StatusText.restartPrompt(names: (restartPrompt?.ids ?? []).compactMap { runtimes[$0]?.spec.name })
+    }
+
+    func answerRestartPrompt(restartNow: Bool) {
+        guard let prompt = restartPrompt else { return }
+        restartPrompt = nil
+        for id in prompt.ids {
+            if restartNow { restart(id) } else { runtimes[id]?.needsRestartToApply = true }
+        }
     }
 
     func exportConfig(to url: URL) {
@@ -432,7 +493,7 @@ final class AppModel {
 
     /// A Run Once process: tracked for quit and crash cleanup, never notified about, never saved.
     func makeTransientRuntime(_ spec: CommandSpec) -> CommandRuntime {
-        let runtime = CommandRuntime(spec: spec, supervisor: Supervisor(spec: spec))
+        let runtime = CommandRuntime(spec: spec, supervisor: Supervisor(spec: ConfigEditor.launchSpec(for: spec, in: config)))
         transientRuntimes[spec.id] = runtime
         Task { [weak self] in
             for await event in runtime.supervisor.events {
@@ -448,7 +509,7 @@ final class AppModel {
     }
 
     private func makeRuntime(_ spec: CommandSpec) {
-        let runtime = CommandRuntime(spec: spec, supervisor: Supervisor(spec: spec))
+        let runtime = CommandRuntime(spec: spec, supervisor: Supervisor(spec: ConfigEditor.launchSpec(for: spec, in: config)))
         runtimes[spec.id] = runtime
         Task { [weak self] in
             for await event in runtime.supervisor.events {
@@ -465,6 +526,7 @@ final class AppModel {
             switch status.kind {
             case .starting:
                 Task {
+                    runtime.launchedCwd = await runtime.supervisor.currentSpec.cwd
                     runtime.pid = await runtime.supervisor.currentPID
                     updateTrackedProcesses()
                 }

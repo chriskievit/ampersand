@@ -37,7 +37,7 @@ struct CommandForm<Header: View, Footer: View>: View {
             Section("Location") {
                 LabeledContent("Working directory") {
                     HStack {
-                        TextField("Working directory", text: $draft.cwd, prompt: Text("Not set"))
+                        TextField("Working directory", text: $draft.cwd, prompt: Text(cwdPrompt))
                             .labelsHidden()
                         Button("Choose…") { chooseFolder() }
                     }
@@ -129,6 +129,12 @@ struct CommandForm<Header: View, Footer: View>: View {
 
     private var namePrompt: String {
         draft.commandText.trimmingCharacters(in: .whitespaces).isEmpty ? "From the command" : draft.makeSpec().name
+    }
+
+    /// An empty folder field shows what the command inherits from its group.
+    private var cwdPrompt: String {
+        let inherited = draft.group.flatMap { id in model.config.groups.first { $0.id == id }?.cwd }
+        return inherited.map { "Inherited: \($0)" } ?? "Not set"
     }
 
     private var groupSelection: Binding<String?> {

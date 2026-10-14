@@ -17,6 +17,9 @@ final class CommandRuntime: Identifiable {
     var healthFailingSince: Date?
     var portConflict: PortOwner?
     var needsRestartToApply = false
+    /// The working directory the current process started in, so a config change that ends
+    /// up at the same folder asks for no restart.
+    @ObservationIgnored var launchedCwd: String?
 
     private(set) var lines: [String] = []
     private(set) var partialLine = ""

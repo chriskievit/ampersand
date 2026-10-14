@@ -30,6 +30,14 @@ struct MainWindow: View {
             case .importProject: ProjectImportSheet(model: model)
             }
         }
+        .alert(model.restartPromptText.title, isPresented: Binding(
+            get: { model.restartPrompt != nil },
+            set: { if !$0 { model.answerRestartPrompt(restartNow: false) } })) {
+            Button("Restart now") { model.answerRestartPrompt(restartNow: true) }
+            Button("Later", role: .cancel) { model.answerRestartPrompt(restartNow: false) }
+        } message: {
+            Text(model.restartPromptText.message)
+        }
         .background(WindowVisibilityReader { model.isWindowVisible = $0 })
         .onAppear {
             ActivationPolicyController.windowDidAppear()

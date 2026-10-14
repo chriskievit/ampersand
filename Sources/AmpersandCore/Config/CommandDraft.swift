@@ -89,6 +89,7 @@ public struct CommandDraft: Sendable, Equatable {
                 return "Enter a URL that starts with http:// or https://."
             }
         }
+        if let problem = WorkingDirectory.problem(makeSpec().cwd ?? "") { return "Working directory: \(problem)" }
         if let error = envErrors.first { return "Environment line \(error.line): \(error.message)" }
         return nil
     }

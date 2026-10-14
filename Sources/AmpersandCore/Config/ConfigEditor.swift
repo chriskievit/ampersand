@@ -120,6 +120,33 @@ public enum ConfigEditor {
         if !trimmed.isEmpty { config.groups[i].name = trimmed }
     }
 
+    /// Sets or (when blank) clears a group's working directory.
+    public static func setGroupCwd(id: String, to cwd: String, in config: inout AppConfig) {
+        guard let i = config.groups.firstIndex(where: { $0.id == id }) else { return }
+        config.groups[i].cwd = WorkingDirectory.normalized(cwd)
+    }
+
+    /// The folder a command runs in: its own, else its group's, else none. The most specific wins.
+    public static func effectiveCwd(of spec: CommandSpec, in config: AppConfig) -> String? {
+        WorkingDirectory.normalized(spec.cwd)
+            ?? spec.group.flatMap { id in config.groups.first { $0.id == id } }.flatMap { WorkingDirectory.normalized($0.cwd) }
+    }
+
+    /// The spec the supervisor launches: the command with its effective working directory.
+    public static func launchSpec(for spec: CommandSpec, in config: AppConfig) -> CommandSpec {
+        var launch = spec
+        launch.cwd = effectiveCwd(of: spec, in: config)
+        return launch
+    }
+
+    /// Commands in both configs whose effective working directory differs between them.
+    public static func cwdChanges(from old: AppConfig, to new: AppConfig) -> [UUID] {
+        new.commands.compactMap { spec in
+            guard let before = old.commands.first(where: { $0.id == spec.id }) else { return nil }
+            return effectiveCwd(of: before, in: old) == effectiveCwd(of: spec, in: new) ? nil : spec.id
+        }
+    }
+
     public static func deleteGroup(id: String, in config: inout AppConfig) {
         config.groups.removeAll { $0.id == id }
         for i in config.commands.indices where config.commands[i].group == id {
