@@ -35,7 +35,8 @@ controls, menus and system colours, with grouped forms like System Settings.
 When a custom design and the platform disagree, the platform wins.
 
 It stays out of your way. There is no Dock icon until you open the window, and
-the menu bar icon only changes when a command needs you.
+the menu bar icon shows only how many commands are active, plus a mark when one
+needs you.
 
 Commands run through your login shell on a pseudo-terminal, so `PATH`, `nvm`,
 kubectl contexts, aliases and colours behave as they do when you type them by
@@ -51,7 +52,8 @@ purpose: commands and one level of groups, without tags, dashboards or plugins.
   only when they are high (from 50 % CPU or 1 GB).
 - The selected row expands to show its CPU, memory and the last lines of its
   log.
-- The menu bar icon changes when something needs you.
+- The menu bar icon shows how many commands are active (you can hide the
+  number in Settings) and a crash mark when something needs you.
 - Filter as you type. Groups keep related commands together, and you can
   start or stop a whole group at once.
 
