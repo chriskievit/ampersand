@@ -6,8 +6,25 @@ struct Sidebar: View {
     @State private var renamingGroup: String?
     @State private var groupName = ""
     @State private var query = ""
+    @State private var revealGroup: String?
+    @FocusState private var renameFocused: Bool
 
     var body: some View {
+        ScrollViewReader { proxy in
+            list
+                .onChange(of: revealGroup) { _, id in
+                    guard let id else { return }
+                    withAnimation(.snappy) { proxy.scrollTo(headerID(id)) }
+                    revealGroup = nil
+                }
+        }
+        .newGroupAlert(isPresented: $model.isAddingGroup) { name in
+            query = ""   // a filter would hide the new, empty group
+            revealGroup = model.addGroup(named: name).id
+        }
+    }
+
+    private var list: some View {
         List(selection: $model.windowSelection) {
             ForEach(visibleSections) { section in
                 Section {
@@ -35,11 +52,7 @@ struct Sidebar: View {
                     Button("New command…") { model.requestNew() }
                     Button("Add from project folder…") { model.requestImport() }
                     Divider()
-                    Button("New group") {
-                        let group = model.addGroup(named: "")
-                        groupName = group.name
-                        renamingGroup = group.id
-                    }
+                    Button("New group…") { model.requestNewGroup() }
                 } label: {
                     // Verbatim: SwiftUI would otherwise pick up the system's translation of "Add".
                     Label { Text(verbatim: "Add") } icon: { Image(systemName: "plus") }
@@ -84,33 +97,46 @@ struct Sidebar: View {
     @ViewBuilder
     private func header(for section: ConfigSection) -> some View {
         if let group = section.group {
-            if renamingGroup == group.id {
-                TextField("Group name", text: $groupName)
-                    .onSubmit {
-                        model.renameGroup(group.id, to: groupName)
-                        renamingGroup = nil
-                    }
-                    .onExitCommand { renamingGroup = nil }
-            } else {
-                Text(group.name)
-                    .onTapGesture(count: 2) {
-                        groupName = group.name
-                        renamingGroup = group.id
-                    }
-                    .contextMenu {
-                        Button("Start all") { model.commands(inGroup: group.id).forEach { model.start($0.id) } }
-                        Button("Stop all") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
-                        Divider()
-                        Button("Rename…") {
-                            groupName = group.name
-                            renamingGroup = group.id
+            Group {
+                if renamingGroup == group.id {
+                    TextField("Group name", text: $groupName)
+                        .focused($renameFocused)
+                        .onSubmit { commitRename(group.id) }
+                        .onExitCommand { renamingGroup = nil }
+                        .onAppear { renameFocused = true }
+                        // Clicking elsewhere keeps the typed name, as a Finder rename does.
+                        .onChange(of: renameFocused) { _, focused in
+                            if !focused { commitRename(group.id) }
                         }
-                        Button("Delete group", role: .destructive) { model.deleteGroup(group.id) }
-                    }
+                } else {
+                    Text(group.name)
+                        .onTapGesture(count: 2) { beginRename(group) }
+                        .contextMenu {
+                            Button("Start all") { model.commands(inGroup: group.id).forEach { model.start($0.id) } }
+                            Button("Stop all") { model.commands(inGroup: group.id).forEach { model.stop($0.id) } }
+                            Divider()
+                            Button("Rename…") { beginRename(group) }
+                            Button("Delete group", role: .destructive) { model.deleteGroup(group.id) }
+                        }
+                }
             }
+            .id(headerID(group.id))
         } else if !model.config.groups.isEmpty {
             Text("No group")
         }
+    }
+
+    private func headerID(_ groupID: String) -> String { "group-header-\(groupID)" }
+
+    private func beginRename(_ group: GroupSpec) {
+        groupName = group.name
+        renamingGroup = group.id
+    }
+
+    private func commitRename(_ groupID: String) {
+        guard renamingGroup == groupID else { return }
+        model.renameGroup(groupID, to: groupName)
+        renamingGroup = nil
     }
 
     /// Native list reordering within a section; moving between groups is in the context menu.

@@ -41,6 +41,8 @@ final class AppModel {
     var windowSelection: UUID?
     var windowTab: DetailTab = .log
     var editorRequest: EditorRequest?
+    /// The window's "New group" alert; the toolbar and the Command menu both open it.
+    var isAddingGroup = false
     var isPopoverVisible = false { didSet { if isPopoverVisible { sampleNow() } } }
     var isWindowVisible = false { didSet { if isWindowVisible { sampleNow() } } }
 
@@ -244,6 +246,7 @@ final class AppModel {
 
     func requestNew(prefill: String = "") { editorRequest = .new(prefill: prefill); openMainWindow() }
     func requestImport() { editorRequest = .importProject; openMainWindow() }
+    func requestNewGroup() { isAddingGroup = true; openMainWindow() }
 
     func requestEdit(_ id: UUID) {
         windowSelection = id

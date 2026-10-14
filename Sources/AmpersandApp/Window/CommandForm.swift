@@ -16,7 +16,6 @@ struct CommandForm<Header: View, Footer: View>: View {
     @ViewBuilder var footer: () -> Footer
     @FocusState private var commandFocused: Bool
     @State private var askingForGroup = false
-    @State private var newGroupName = ""
 
     private static var newGroupTag: String { "__new_group__" }
 
@@ -82,10 +81,8 @@ struct CommandForm<Header: View, Footer: View>: View {
             footer()
         }
         .formStyle(.grouped)
-        .alert("New group", isPresented: $askingForGroup) {
-            TextField("Name", text: $newGroupName)
-            Button("Create") { draft.group = model.addGroup(named: newGroupName).id }
-            Button("Cancel", role: .cancel) {}
+        .newGroupAlert(isPresented: $askingForGroup) { name in
+            draft.group = model.addGroup(named: name).id
         }
     }
 
@@ -139,7 +136,6 @@ struct CommandForm<Header: View, Footer: View>: View {
             draft.group
         } set: { value in
             if value == Self.newGroupTag {
-                newGroupName = ""
                 askingForGroup = true
             } else {
                 draft.group = value
